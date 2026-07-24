@@ -1,3 +1,9 @@
+export interface MaintenanceContext {
+  baseline: Date;
+  flightHoursSinceBaseline: number;
+  now: Date;
+}
+
 export interface MaintenanceDue {
   isDue: boolean;
   dueDate: Date | null;
@@ -5,5 +11,5 @@ export interface MaintenanceDue {
 }
 
 export interface MaintenancePolicy {
-  evaluate(baseline: Date, now: Date): MaintenanceDue;
+  evaluate(ctx: MaintenanceContext): MaintenanceDue;
 }
