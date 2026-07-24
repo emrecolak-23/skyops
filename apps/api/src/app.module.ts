@@ -5,7 +5,9 @@ import { AppService } from './app.service';
 import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
 import { DatabaseModule } from './database/database.module';
-import { DroneStatus } from '@skyops/shared';
+import { DronesModule } from './modules/drones/drones.module';
+import { MissionsModule } from './modules/missions/mission.module';
+import { MaintenanceModule } from './modules/maintenance/maintenance.module';
 
 @Module({
   imports: [
@@ -14,6 +16,9 @@ import { DroneStatus } from '@skyops/shared';
       load: [appConfig, databaseConfig],
     }),
     DatabaseModule,
+    DronesModule,
+    MissionsModule,
+    MaintenanceModule,
   ],
   controllers: [AppController],
   providers: [AppService],

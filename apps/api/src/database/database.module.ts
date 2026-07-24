@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { dataSourceOptions } from 'src/config/type.orm.config';
+import { dataSourceOptions } from 'src/database/typeorm.config';
 import { AllConfigType } from 'src/config/config.type';
 
 @Module({
