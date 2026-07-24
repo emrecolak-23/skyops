@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Build results
+dist/
+build/
+*.tsbuildinfo
+
+# Environment variables (except example file)
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Test / coverage
+coverage/
+.nyc_output/
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Playwright (later)
+test-results/
+playwright-report/
+playwright/.cache/

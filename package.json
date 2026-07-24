@@ -1,0 +1,9 @@
+{
+  "name": "skyops-mission-control",
+  "private": true,
+  "scripts": {
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down",
+    "api:dev": "pnpm --filter @skyops/api start:dev"
+  }
+}
