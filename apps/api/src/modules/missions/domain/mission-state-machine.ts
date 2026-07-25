@@ -1,5 +1,5 @@
 import { MissionStatus } from '@skyops/shared';
-import { InvalidMissionTransitionError } from './mission-state-machine-errors';
+import { InvalidMissionTransitionError } from './mission-state-machine.errors';
 
 export class MissionStateMachine {
   private static readonly GRAPH: Readonly<

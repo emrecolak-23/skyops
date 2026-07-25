@@ -1,6 +1,6 @@
 import { MissionStatus } from '@skyops/shared';
 import { MissionStateMachine } from './mission-state-machine';
-import { InvalidMissionTransitionError } from './mission-state-machine-errors';
+import { InvalidMissionTransitionError } from './mission-state-machine.errors';
 
 describe('MissionStateMachine', () => {
   const sm = new MissionStateMachine();

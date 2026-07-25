@@ -5,6 +5,7 @@ import {
   PaginationParams,
 } from 'src/common/pagination/pagination';
 import { randomUUID } from 'crypto';
+import { Tx } from 'src/common/persistence/tx';
 
 export class InMemoryDroneRepository implements IDroneRepository {
   private readonly store = new Map<string, Drone>();
@@ -27,7 +28,7 @@ export class InMemoryDroneRepository implements IDroneRepository {
     return Promise.resolve({ data, total: all.length });
   }
 
-  save(drone: Drone): Promise<Drone> {
+  save(drone: Drone, _tx?: Tx): Promise<Drone> {
     if (!drone.id) {
       drone.id = randomUUID();
     }

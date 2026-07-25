@@ -7,6 +7,7 @@ import {
 } from 'src/common/pagination/pagination';
 import { Drone } from '../entities/drone.entity';
 import { IDroneRepository } from './drone.repository';
+import { Tx } from 'src/common/persistence/tx';
 
 @Injectable()
 export class TypeOrmDroneRepository implements IDroneRepository {
@@ -35,8 +36,9 @@ export class TypeOrmDroneRepository implements IDroneRepository {
     return { data, total };
   }
 
-  save(drone: Drone): Promise<Drone> {
-    return this.repo.save(drone);
+  save(drone: Drone, tx?: Tx): Promise<Drone> {
+    const repo = tx ? tx.getRepository(Drone) : this.repo;
+    return repo.save(drone);
   }
 
   create(data: Partial<Drone>): Drone {

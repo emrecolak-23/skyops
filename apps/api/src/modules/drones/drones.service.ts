@@ -17,6 +17,7 @@ import {
 } from './domain/drone.errors';
 import { PaginationQueryDto } from 'src/common/pagination/pagination-query.dto';
 import { PaginatedResult } from 'src/common/pagination/pagination';
+import { Tx } from 'src/common/persistence/tx';
 
 @Injectable()
 export class DronesService {
@@ -74,6 +75,14 @@ export class DronesService {
     return this.drones.findPaginated({ page: query.page, limit: query.limit });
   }
 
+  saveInTransaction(drone: Drone, tx?: Tx): Promise<Drone> {
+    return this.drones.save(drone, tx);
+  }
+
+  saveDrone(drone: Drone, tx?: Tx): Promise<Drone> {
+    return this.drones.save(drone, tx);
+  }
+
   async retire(id: string): Promise<Drone> {
     const drone = await this.findById(id);
 
@@ -85,5 +94,20 @@ export class DronesService {
 
     drone.status = DroneStatus.RETIRED;
     return this.drones.save(drone);
+  }
+
+  recalculateMaintenance(drone: Drone): void {
+    const now = this.clock.now();
+    const baseline = drone.lastMaintenanceDate ?? drone.registeredAt;
+    const flightHoursSinceBaseline =
+      Number(drone.totalFlightHours) -
+      Number(drone.flightHoursAtLastMaintenance);
+    const due = this.maintenancePolicy.evaluate({
+      baseline,
+      flightHoursSinceBaseline,
+      now,
+    });
+
+    drone.nextMaintenanceDueDate = due.dueDate;
   }
 }
