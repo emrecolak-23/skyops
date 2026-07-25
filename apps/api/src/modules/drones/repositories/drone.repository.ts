@@ -13,4 +13,5 @@ export interface IDroneRepository {
   findPaginated(params: PaginationParams): Promise<PaginatedResult<Drone>>;
   save(drone: Drone, tx?: Tx): Promise<Drone>;
   create(data: Partial<Drone>): Drone;
+  findByIdForUpdate(id: string, tx: Tx): Promise<Drone | null>;
 }

@@ -44,4 +44,12 @@ export class TypeOrmDroneRepository implements IDroneRepository {
   create(data: Partial<Drone>): Drone {
     return this.repo.create(data);
   }
+
+  findByIdForUpdate(id: string, tx: Tx): Promise<Drone | null> {
+    return tx
+      .createQueryBuilder(Drone, 'drone')
+      .setLock('pessimistic_write')
+      .where('drone.id = :id', { id })
+      .getOne();
+  }
 }

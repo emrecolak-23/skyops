@@ -6,7 +6,7 @@ import type { TransactionRunner } from 'src/common/persistence/transaction-runne
 import { TRANSACTION_RUNNER } from 'src/common/persistence/transaction-runner';
 import { DronesService } from '../drones/drones.service';
 import { Mission } from './entities/mission.entity';
-import { CreateMissionDto } from './dto';
+import { CreateMissionDto, MissionQueryDto } from './dto';
 import { MISSION_REPOSITORY } from './repositories/mission.repository';
 import type { IMissionRepository } from './repositories/mission.repository';
 import { MissionStateMachine } from './domain/mission-state-machine';
@@ -18,6 +18,7 @@ import {
   MissionNotFoundError,
   MissionOverlapError,
 } from './domain/mission.errors';
+import { PaginatedResult } from 'src/common/pagination/pagination';
 
 @Injectable()
 export class MissionsService {
@@ -42,41 +43,43 @@ export class MissionsService {
       throw new MissionInPastError();
     }
 
-    const drone = await this.drones.findById(dto.droneId);
+    return this.tx.run(async (tx) => {
+      const drone = await this.drones.findById(dto.droneId);
 
-    if (
-      drone.status === DroneStatus.RETIRED ||
-      drone.status === DroneStatus.MAINTENANCE
-    ) {
-      throw new DroneNotAvailableError(drone.id);
-    }
+      if (
+        drone.status === DroneStatus.RETIRED ||
+        drone.status === DroneStatus.MAINTENANCE
+      ) {
+        throw new DroneNotAvailableError(drone.id);
+      }
 
-    const overlapping = await this.missions.findActiveOverlapping(
-      dto.droneId,
-      plannedStart,
-      plannedEnd,
-    );
+      const overlapping = await this.missions.findActiveOverlapping(
+        dto.droneId,
+        plannedStart,
+        plannedEnd,
+      );
 
-    if (overlapping.length > 0) {
-      throw new MissionOverlapError(dto.droneId);
-    }
+      if (overlapping.length > 0) {
+        throw new MissionOverlapError(dto.droneId);
+      }
 
-    const mission = this.missions.create({
-      name: dto.name,
-      type: dto.type,
-      droneId: dto.droneId,
-      pilotName: dto.pilotName,
-      siteLocation: dto.siteLocation,
-      status: MissionStatus.PLANNED,
-      plannedStart,
-      plannedEnd,
-      actualStart: null,
-      actualEnd: null,
-      flightHoursLogged: null,
-      abortReason: null,
+      const mission = this.missions.create({
+        name: dto.name,
+        type: dto.type,
+        droneId: dto.droneId,
+        pilotName: dto.pilotName,
+        siteLocation: dto.siteLocation,
+        status: MissionStatus.PLANNED,
+        plannedStart,
+        plannedEnd,
+        actualStart: null,
+        actualEnd: null,
+        flightHoursLogged: null,
+        abortReason: null,
+      });
+
+      return this.missions.save(mission);
     });
-
-    return this.missions.save(mission);
   }
 
   async startPreFlight(id: string): Promise<Mission> {
@@ -100,6 +103,26 @@ export class MissionsService {
     return this.transitionsTo(id, MissionStatus.ABORTED, {
       abortReason: dto.reason,
     });
+  }
+
+  findPaginated(query: MissionQueryDto): Promise<PaginatedResult<Mission>> {
+    return this.missions.findPaginated(
+      {
+        status: query.status,
+        droneId: query.droneId,
+        from: query.from ? new Date(query.from) : undefined,
+        to: query.to ? new Date(query.to) : undefined,
+      },
+      { page: query.page, limit: query.limit },
+    );
+  }
+
+  async findById(id: string): Promise<Mission> {
+    const mission = await this.missions.findById(id);
+    if (!mission) {
+      throw new MissionNotFoundError(id);
+    }
+    return mission;
   }
 
   private transitionsTo(

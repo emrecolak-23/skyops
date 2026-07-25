@@ -9,6 +9,7 @@ import { DatabaseModule } from './database/database.module';
 import { DronesModule } from './modules/drones/drones.module';
 import { MissionsModule } from './modules/missions/mission.module';
 import { MaintenanceModule } from './modules/maintenance/maintenance.module';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { MaintenanceModule } from './modules/maintenance/maintenance.module';
     }),
     DatabaseModule,
     DronesModule,
+    CommonModule,
     MissionsModule,
     MaintenanceModule,
   ],

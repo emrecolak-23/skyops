@@ -41,4 +41,8 @@ export class InMemoryDroneRepository implements IDroneRepository {
     Object.assign(drone, data);
     return drone;
   }
+
+  findByIdForUpdate(id: string, _tx: Tx): Promise<Drone | null> {
+    return this.findById(id);
+  }
 }

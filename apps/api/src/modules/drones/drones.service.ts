@@ -110,4 +110,14 @@ export class DronesService {
 
     drone.nextMaintenanceDueDate = due.dueDate;
   }
+
+  async findByIdForUpdate(id: string, tx: Tx): Promise<Drone> {
+    const drone = await this.drones.findByIdForUpdate(id, tx);
+
+    if (!drone) {
+      throw new DroneNotFoundError(id);
+    }
+
+    return drone;
+  }
 }
