@@ -11,6 +11,8 @@ import { AllConfigType } from 'src/config/config.type';
       useFactory: (config: ConfigService<AllConfigType>) => ({
         ...dataSourceOptions,
         url: config.getOrThrow('database.url', { infer: true }),
+        migrations: [],
+        migrationsRun: false,
       }),
     }),
   ],
