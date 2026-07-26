@@ -10,7 +10,6 @@ async function bootstrap() {
 
   const config = app.get<ConfigService<AllConfigType>>(ConfigService);
   app.setGlobalPrefix(config.getOrThrow('app.apiPrefix', { infer: true }));
-
   app.useGlobalFilters(new DomainExceptionFilter());
 
   app.useGlobalPipes(
@@ -21,6 +20,8 @@ async function bootstrap() {
       transformOptions: { enableImplicitConversion: true },
     }),
   );
+
+  app.enableShutdownHooks();
 
   app.enableCors({ origin: true });
 
