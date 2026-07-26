@@ -214,12 +214,9 @@ describe('MissionService', () => {
       await service.startPreFlight(mission.id);
       await service.start(mission.id);
 
-      const { mission: completed, maintenanceDue } = await service.complete(
-        mission.id,
-        {
-          flightHoursLogged: 2.5,
-        },
-      );
+      const { mission: completed } = await service.complete(mission.id, {
+        flightHoursLogged: 2.5,
+      });
       expect(completed.status).toBe(MissionStatus.COMPLETED);
       expect(completed.flightHoursLogged).toBe(2.5);
 

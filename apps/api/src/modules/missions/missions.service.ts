@@ -45,7 +45,7 @@ export class MissionsService {
     }
 
     return this.tx.run(async (tx) => {
-      const drone = await this.drones.findById(dto.droneId);
+      const drone = await this.drones.findByIdForUpdate(dto.droneId, tx);
 
       if (
         drone.status === DroneStatus.RETIRED ||
@@ -62,6 +62,7 @@ export class MissionsService {
         dto.droneId,
         plannedStart,
         plannedEnd,
+        tx,
       );
 
       if (overlapping.length > 0) {
@@ -83,7 +84,7 @@ export class MissionsService {
         abortReason: null,
       });
 
-      return this.missions.save(mission);
+      return this.missions.save(mission, tx);
     });
   }
 

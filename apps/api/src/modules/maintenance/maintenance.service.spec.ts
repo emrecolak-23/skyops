@@ -14,7 +14,6 @@ import { CalendarIntervalPolicy } from 'src/modules/drones/domain/maintenance/ca
 import { FlightHoursPolicy } from 'src/modules/drones/domain/maintenance/flight-hours.policy';
 import { Tx } from 'src/common/persistence/tx';
 import { TransactionRunner } from 'src/common/persistence/transaction-runner';
-import { Drone } from 'src/modules/drones/entities/drone.entity';
 import {
   InconsistentFlightHoursError,
   MaintenanceAlreadyCompletedError,
