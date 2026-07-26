@@ -112,7 +112,7 @@ export class DronesService {
     return due.isDue;
   }
 
-  async findByIdForUpdate(id: string, tx: Tx): Promise<Drone> {
+  async findByIdForUpdate(id: string, tx?: Tx): Promise<Drone> {
     const drone = await this.drones.findByIdForUpdate(id, tx);
 
     if (!drone) {
@@ -120,6 +120,16 @@ export class DronesService {
     }
 
     return drone;
+  }
+
+  applyMaintenance(
+    drone: Drone,
+    completedAt: Date,
+    flightHoursAtMaintenance: number,
+  ): void {
+    drone.lastMaintenanceDate = completedAt;
+    drone.flightHoursAtLastMaintenance = flightHoursAtMaintenance;
+    this.recalculateMaintenance(drone);
   }
 
   isMaintenanceDue(drone: Drone): boolean {

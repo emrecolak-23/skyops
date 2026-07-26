@@ -1,10 +1,11 @@
 export type MaintenanceConfig = {
   intervalDays: number;
   intervalFlightHours: number;
+  toleranceHours: number;
 };
 
 import { registerAs } from '@nestjs/config';
-import { IsInt, IsOptional, Min } from 'class-validator';
+import { IsInt, IsNumber, IsOptional, Min } from 'class-validator';
 import { validateConfig } from 'src/utils/validate-config.util';
 
 class MaintenanceEnvValidator {
@@ -17,6 +18,11 @@ class MaintenanceEnvValidator {
   @Min(1)
   @IsOptional()
   MAINTENANCE_INTERVAL_FLIGHT_HOURS?: number;
+
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  MAINTENANCE_TOLERANCE_HOURS?: number;
 }
 
 export default registerAs<MaintenanceConfig>('maintenance', () => {
@@ -28,5 +34,8 @@ export default registerAs<MaintenanceConfig>('maintenance', () => {
     intervalFlightHours: process.env.MAINTENANCE_INTERVAL_FLIGHT_HOURS
       ? parseInt(process.env.MAINTENANCE_INTERVAL_FLIGHT_HOURS, 10)
       : 50,
+    toleranceHours: process.env.MAINTENANCE_TOLERANCE_HOURS
+      ? parseFloat(process.env.MAINTENANCE_TOLERANCE_HOURS)
+      : 1.0,
   };
 });
