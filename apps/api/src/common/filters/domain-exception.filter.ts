@@ -38,7 +38,7 @@ export class DomainExceptionFilter implements ExceptionFilter {
     });
   }
 
-  private resolve(exception: unknown): { status: number; message: string } {
+  private resolve(exception: unknown): { status: HttpStatus; message: string } {
     if (exception instanceof DomainError) {
       return {
         status: KIND_TO_STATUS[exception.kind],

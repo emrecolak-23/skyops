@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { PaginationQueryDto } from 'src/common/pagination/pagination-query.dto';
 import { DronesService } from './drones.service';
-import { CreateDroneDto, UpdateDroneDto, DroneResponseDto } from './dto';
+import { CreateDroneDto, DroneResponseDto } from './dto';
 
 @Controller('drones')
 export class DronesController {

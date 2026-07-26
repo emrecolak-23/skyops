@@ -18,7 +18,7 @@ const ACTIVE_STATUSES: MissionStatus[] = [
 export class InMemoryMissionRepository implements IMissionRepository {
   private readonly store = new Map<string, Mission>();
 
-  findById(id: string, _: Tx): Promise<Mission | null> {
+  findById(id: string, _tx?: Tx): Promise<Mission | null> {
     return Promise.resolve(this.store.get(id) ?? null);
   }
 

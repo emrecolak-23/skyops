@@ -43,7 +43,7 @@ export class MaintenanceController {
   ) {
     const result = await this.maintenanceService.findByDroneId(droneId, query);
     return {
-      data: result.data.map(MaintenanceLogResponseDto.fromEntity),
+      data: result.data.map((log) => MaintenanceLogResponseDto.fromEntity(log)),
       meta: {
         page: query.page,
         limit: query.limit,

@@ -1,6 +1,5 @@
 import { DroneStatus } from '@skyops/shared';
 import { buildStatusBreakdown, totalFromBreakdown } from './fleet-health';
-import { DroneModel } from '@skyops/shared';
 import { Drone } from 'src/modules/drones/entities/drone.entity';
 import { CompositeMaintenancePolicy } from 'src/modules/drones/domain/maintenance/composite-maintenance.policy';
 import { CalendarIntervalPolicy } from 'src/modules/drones/domain/maintenance/calendar-interval.policy';
