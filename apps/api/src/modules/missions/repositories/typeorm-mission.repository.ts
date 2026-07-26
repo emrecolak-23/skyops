@@ -101,4 +101,16 @@ export class TypeormMissionRepository implements IMissionRepository {
   create(data: Partial<Mission>): Mission {
     return this.repo.create(data);
   }
+
+  countInNext24Hours(now: Date): Promise<number> {
+    const in24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    return this.repo
+      .createQueryBuilder('mission')
+      .where('mission.plannedStart >= :now', { now })
+      .andWhere('mission.plannedStart <= :in24h', { in24h })
+      .andWhere('mission.status IN (:...statuses)', {
+        statuses: [MissionStatus.PLANNED, MissionStatus.PRE_FLIGHT_CHECK],
+      })
+      .getCount();
+  }
 }

@@ -72,4 +72,16 @@ export class InMemoryMissionRepository implements IMissionRepository {
     Object.assign(mission, data);
     return mission;
   }
+
+  countInNext24Hours(now: Date): Promise<number> {
+    const in24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    const count = [...this.store.values()].filter(
+      (m) =>
+        m.plannedStart >= now &&
+        m.plannedStart <= in24h &&
+        (m.status === MissionStatus.PLANNED ||
+          m.status === MissionStatus.PRE_FLIGHT_CHECK),
+    ).length;
+    return Promise.resolve(count);
+  }
 }

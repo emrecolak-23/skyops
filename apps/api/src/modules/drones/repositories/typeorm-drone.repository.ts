@@ -8,6 +8,7 @@ import {
 import { Drone } from '../entities/drone.entity';
 import { IDroneRepository } from './drone.repository';
 import { Tx } from 'src/common/persistence/tx';
+import { DroneStatus } from '@skyops/shared';
 
 @Injectable()
 export class TypeOrmDroneRepository implements IDroneRepository {
@@ -55,5 +56,34 @@ export class TypeOrmDroneRepository implements IDroneRepository {
       .setLock('pessimistic_write')
       .where('drone.id = :id', { id })
       .getOne();
+  }
+
+  async countByStatus(): Promise<{ status: DroneStatus; count: number }[]> {
+    const rows = await this.repo
+      .createQueryBuilder('drone')
+      .select('drone.status', 'status')
+      .addSelect('COUNT(*)', 'count')
+      .groupBy('drone.status')
+      .getRawMany<{ status: DroneStatus; count: string }>();
+    return rows.map((r) => ({
+      status: r.status,
+      count: parseInt(r.count, 10),
+    }));
+  }
+
+  async averageFlightHours(): Promise<number> {
+    const row = await this.repo
+      .createQueryBuilder('drone')
+      .select('AVG(drone.total_flight_hours)', 'avg')
+      .where('drone.status != :retired', { retired: DroneStatus.RETIRED })
+      .getRawOne<{ avg: string | null }>();
+    return row?.avg ? parseFloat(row.avg) : 0;
+  }
+
+  findNonRetired(): Promise<Drone[]> {
+    return this.repo
+      .createQueryBuilder('drone')
+      .where('drone.status != :retired', { retired: DroneStatus.RETIRED })
+      .getMany();
   }
 }

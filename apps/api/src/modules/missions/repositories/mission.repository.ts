@@ -30,4 +30,5 @@ export interface IMissionRepository {
   countActiveByDroneId(droneId: string): Promise<number>;
   save(mission: Mission, tx?: Tx): Promise<Mission>;
   create(data: Partial<Mission>): Mission;
+  countInNext24Hours(now: Date): Promise<number>;
 }

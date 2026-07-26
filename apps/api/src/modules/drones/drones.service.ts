@@ -18,6 +18,7 @@ import {
 import { PaginationQueryDto } from 'src/common/pagination/pagination-query.dto';
 import { PaginatedResult } from 'src/common/pagination/pagination';
 import { Tx } from 'src/common/persistence/tx';
+import { buildMaintenanceContext } from './domain/maintenance/maintenance-context';
 
 @Injectable()
 export class DronesService {
@@ -97,17 +98,8 @@ export class DronesService {
   }
 
   recalculateMaintenance(drone: Drone): boolean {
-    const now = this.clock.now();
-    const baseline = drone.lastMaintenanceDate ?? drone.registeredAt;
-    const flightHoursSinceBaseline =
-      Number(drone.totalFlightHours) -
-      Number(drone.flightHoursAtLastMaintenance);
-    const due = this.maintenancePolicy.evaluate({
-      baseline,
-      flightHoursSinceBaseline,
-      now,
-    });
-
+    const ctx = buildMaintenanceContext(drone, this.clock.now());
+    const due = this.maintenancePolicy.evaluate(ctx);
     drone.nextMaintenanceDueDate = due.dueDate;
     return due.isDue;
   }
@@ -133,16 +125,7 @@ export class DronesService {
   }
 
   isMaintenanceDue(drone: Drone): boolean {
-    const now = this.clock.now();
-    const baseline = drone.lastMaintenanceDate ?? drone.registeredAt;
-    const flightHoursSinceBaseline =
-      Number(drone.totalFlightHours) -
-      Number(drone.flightHoursAtLastMaintenance);
-
-    return this.maintenancePolicy.evaluate({
-      baseline,
-      flightHoursSinceBaseline,
-      now,
-    }).isDue;
+    const ctx = buildMaintenanceContext(drone, this.clock.now());
+    return this.maintenancePolicy.evaluate(ctx).isDue;
   }
 }

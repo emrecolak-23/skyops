@@ -1,3 +1,4 @@
+import { DroneStatus } from '@skyops/shared';
 import { Drone } from '../entities/drone.entity';
 import {
   PaginatedResult,
@@ -14,4 +15,7 @@ export interface IDroneRepository {
   save(drone: Drone, tx?: Tx): Promise<Drone>;
   create(data: Partial<Drone>): Drone;
   findByIdForUpdate(id: string, tx?: Tx): Promise<Drone | null>;
+  countByStatus(): Promise<{ status: DroneStatus; count: number }[]>;
+  averageFlightHours(): Promise<number>;
+  findNonRetired(): Promise<Drone[]>;
 }

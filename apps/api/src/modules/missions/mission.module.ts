@@ -30,6 +30,6 @@ import { MissionsController } from './mission.controller';
       useClass: MissionActiveCheckerAdapter,
     },
   ],
-  exports: [ACTIVE_MISSION_CHECKER],
+  exports: [ACTIVE_MISSION_CHECKER, MISSION_REPOSITORY],
 })
 export class MissionsModule {}

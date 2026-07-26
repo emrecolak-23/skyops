@@ -6,6 +6,7 @@ import {
 } from 'src/common/pagination/pagination';
 import { randomUUID } from 'crypto';
 import { Tx } from 'src/common/persistence/tx';
+import { DroneStatus } from '@skyops/shared';
 
 export class InMemoryDroneRepository implements IDroneRepository {
   private readonly store = new Map<string, Drone>();
@@ -44,5 +45,30 @@ export class InMemoryDroneRepository implements IDroneRepository {
 
   findByIdForUpdate(id: string, _tx?: Tx): Promise<Drone | null> {
     return this.findById(id);
+  }
+
+  countByStatus(): Promise<{ status: DroneStatus; count: number }[]> {
+    const counts = new Map<DroneStatus, number>();
+    for (const d of this.store.values()) {
+      counts.set(d.status, (counts.get(d.status) ?? 0) + 1);
+    }
+    return Promise.resolve(
+      [...counts.entries()].map(([status, count]) => ({ status, count })),
+    );
+  }
+
+  averageFlightHours(): Promise<number> {
+    const active = [...this.store.values()].filter(
+      (d) => d.status !== DroneStatus.RETIRED,
+    );
+    if (active.length === 0) return Promise.resolve(0);
+    const sum = active.reduce((s, d) => s + Number(d.totalFlightHours), 0);
+    return Promise.resolve(sum / active.length);
+  }
+
+  findNonRetired(): Promise<Drone[]> {
+    return Promise.resolve(
+      [...this.store.values()].filter((d) => d.status !== DroneStatus.RETIRED),
+    );
   }
 }

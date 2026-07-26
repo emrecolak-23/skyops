@@ -38,6 +38,6 @@ import { MissionsModule } from '../missions/mission.module';
       },
     },
   ],
-  exports: [DronesService],
+  exports: [DronesService, DRONE_REPOSITORY, MAINTENANCE_POLICY],
 })
 export class DronesModule {}

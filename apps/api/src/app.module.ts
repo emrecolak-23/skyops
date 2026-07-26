@@ -10,6 +10,7 @@ import { DronesModule } from './modules/drones/drones.module';
 import { MissionsModule } from './modules/missions/mission.module';
 import { MaintenanceModule } from './modules/maintenance/maintenance.module';
 import { CommonModule } from './common/common.module';
+import { FleetModule } from './modules/fleet/fleet.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { CommonModule } from './common/common.module';
     CommonModule,
     MissionsModule,
     MaintenanceModule,
+    FleetModule,
   ],
   controllers: [AppController],
   providers: [AppService],
