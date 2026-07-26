@@ -15,6 +15,7 @@ import { AbortMissionDto } from './dto/abort-mission.dto';
 import { MissionQueryDto } from './dto/mission-query.dto';
 import { MissionResponseDto } from './dto/mission-response.dto';
 import { MissionStateMachine } from './domain/mission-state-machine';
+import { Mission } from './entities/mission.entity';
 
 @Controller('missions')
 export class MissionsController {
@@ -72,8 +73,11 @@ export class MissionsController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: CompleteMissionDto,
   ): Promise<MissionResponseDto> {
-    const mission = await this.missionsService.complete(id, dto);
-    return this.toResponse(mission);
+    const { mission, maintenanceDue } = await this.missionsService.complete(
+      id,
+      dto,
+    );
+    return this.toResponse(mission, maintenanceDue);
   }
 
   @Patch(':id/abort')
@@ -86,13 +90,13 @@ export class MissionsController {
   }
 
   private toResponse(
-    mission: MissionResponseDto extends never
-      ? never
-      : import('./entities/mission.entity').Mission,
+    mission: Mission,
+    maintenanceDue?: boolean,
   ): MissionResponseDto {
     return MissionResponseDto.fromEntity(
       mission,
       this.stateMachine.allowedTransitions(mission.status),
+      maintenanceDue,
     );
   }
 }

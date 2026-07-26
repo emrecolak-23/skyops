@@ -12,6 +12,7 @@ import { MissionStateMachine } from './domain/mission-state-machine';
 import { MissionTransitionRegistry } from './domain/transitions/mission-transition.registry';
 import { FixedClock } from 'src/common/clock/clock';
 import { CalendarIntervalPolicy } from 'src/modules/drones/domain/maintenance/calendar-interval.policy';
+import { FlightHoursPolicy } from '../drones/domain/maintenance/flight-hours.policy';
 import { Tx } from 'src/common/persistence/tx';
 import { TransactionRunner } from 'src/common/persistence/transaction-runner';
 import { Drone } from 'src/modules/drones/entities/drone.entity';
@@ -21,9 +22,11 @@ import {
   InvalidMissionScheduleError,
   DroneNotAvailableError,
   MissionNotFoundError,
+  DroneMaintenanceDueError,
 } from './domain/mission.errors';
 import { DroneNotFoundError } from 'src/modules/drones/domain/drone.errors';
 import { InvalidMissionTransitionError } from './domain/mission-state-machine.errors';
+import { CompositeMaintenancePolicy } from '../drones/domain/maintenance/composite-maintenance.policy';
 
 class NoopTransactionRunner implements TransactionRunner {
   run<T>(fn: (tx?: Tx) => Promise<T>): Promise<T> {
@@ -69,7 +72,10 @@ describe('MissionService', () => {
     droneRepo = new InMemoryDroneRepository();
     dronesService = new DronesService(
       droneRepo,
-      new CalendarIntervalPolicy(90),
+      new CompositeMaintenancePolicy([
+        new CalendarIntervalPolicy(90),
+        new FlightHoursPolicy(50),
+      ]),
       new FixedClock(now),
       { hasActiveMissions: () => Promise.resolve(false) },
     );
@@ -158,6 +164,24 @@ describe('MissionService', () => {
 
       expect(second.status).toBe(MissionStatus.PLANNED);
     });
+
+    it('rejects scheduling for a drone with maintenance due', async () => {
+      const drone = droneRepo.create({
+        serialNumber: 'SKY-M2D2-0010',
+        model: DroneModel.MATRICE_300,
+        status: DroneStatus.AVAILABLE,
+        totalFlightHours: 60, // over the 50h threshold
+        flightHoursAtLastMaintenance: 0,
+        lastMaintenanceDate: null,
+        registeredAt: now,
+        nextMaintenanceDueDate: null,
+      });
+      await droneRepo.save(drone);
+
+      await expect(service.create(validMissionInput(drone.id))).rejects.toThrow(
+        DroneMaintenanceDueError,
+      );
+    });
   });
 
   describe('state transitions', () => {
@@ -190,11 +214,14 @@ describe('MissionService', () => {
       await service.startPreFlight(mission.id);
       await service.start(mission.id);
 
-      const updated = await service.complete(mission.id, {
-        flightHoursLogged: 2.5,
-      });
-      expect(updated.status).toBe(MissionStatus.COMPLETED);
-      expect(updated.flightHoursLogged).toBe(2.5);
+      const { mission: completed, maintenanceDue } = await service.complete(
+        mission.id,
+        {
+          flightHoursLogged: 2.5,
+        },
+      );
+      expect(completed.status).toBe(MissionStatus.COMPLETED);
+      expect(completed.flightHoursLogged).toBe(2.5);
 
       const freshDrone = await droneRepo.findById(drone.id);
       expect(freshDrone?.status).toBe(DroneStatus.AVAILABLE);
@@ -225,6 +252,45 @@ describe('MissionService', () => {
       await expect(
         service.startPreFlight('00000000-0000-0000-0000-000000000000'),
       ).rejects.toThrow(MissionNotFoundError);
+    });
+  });
+
+  describe('maintenance due on completion', () => {
+    it('reports maintenanceDue true when completing pushes the drone over the flight-hours threshold', async () => {
+      const drone = droneRepo.create({
+        serialNumber: 'SKY-N1E1-0009',
+        model: DroneModel.MATRICE_300,
+        status: DroneStatus.AVAILABLE,
+        totalFlightHours: 48,
+        flightHoursAtLastMaintenance: 0,
+        lastMaintenanceDate: null,
+        registeredAt: now,
+        nextMaintenanceDueDate: null,
+      });
+      await droneRepo.save(drone);
+
+      const mission = await service.create(validMissionInput(drone.id));
+      await service.startPreFlight(mission.id);
+      await service.start(mission.id);
+
+      const result = await service.complete(mission.id, {
+        flightHoursLogged: 3,
+      });
+
+      expect(result.maintenanceDue).toBe(true);
+    });
+
+    it('reports maintenanceDue false when still under the threshold', async () => {
+      const drone = await seedDrone(); // 0 hours
+      const mission = await service.create(validMissionInput(drone.id));
+      await service.startPreFlight(mission.id);
+      await service.start(mission.id);
+
+      const result = await service.complete(mission.id, {
+        flightHoursLogged: 2.5,
+      });
+
+      expect(result.maintenanceDue).toBe(false);
     });
   });
 });

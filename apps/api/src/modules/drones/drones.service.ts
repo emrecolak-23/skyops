@@ -96,7 +96,7 @@ export class DronesService {
     return this.drones.save(drone);
   }
 
-  recalculateMaintenance(drone: Drone): void {
+  recalculateMaintenance(drone: Drone): boolean {
     const now = this.clock.now();
     const baseline = drone.lastMaintenanceDate ?? drone.registeredAt;
     const flightHoursSinceBaseline =
@@ -109,6 +109,7 @@ export class DronesService {
     });
 
     drone.nextMaintenanceDueDate = due.dueDate;
+    return due.isDue;
   }
 
   async findByIdForUpdate(id: string, tx: Tx): Promise<Drone> {
@@ -119,5 +120,19 @@ export class DronesService {
     }
 
     return drone;
+  }
+
+  isMaintenanceDue(drone: Drone): boolean {
+    const now = this.clock.now();
+    const baseline = drone.lastMaintenanceDate ?? drone.registeredAt;
+    const flightHoursSinceBaseline =
+      Number(drone.totalFlightHours) -
+      Number(drone.flightHoursAtLastMaintenance);
+
+    return this.maintenancePolicy.evaluate({
+      baseline,
+      flightHoursSinceBaseline,
+      now,
+    }).isDue;
   }
 }

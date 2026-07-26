@@ -10,8 +10,9 @@ export class DroneResponseDto {
   lastMaintenanceDate!: string | null;
   nextMaintenanceDueDate!: string | null;
   registeredAt!: string;
+  maintenanceDue?: boolean;
 
-  static fromEntity(drone: Drone): DroneResponseDto {
+  static fromEntity(drone: Drone, maintenanceDue?: boolean): DroneResponseDto {
     const dto = new DroneResponseDto();
     dto.id = drone.id;
     dto.serialNumber = drone.serialNumber;
@@ -22,6 +23,8 @@ export class DroneResponseDto {
     dto.nextMaintenanceDueDate =
       drone.nextMaintenanceDueDate?.toISOString() ?? null;
     dto.registeredAt = drone.registeredAt.toISOString();
+    dto.maintenanceDue = maintenanceDue;
+
     return dto;
   }
 }

@@ -12,6 +12,7 @@ import type { IMissionRepository } from './repositories/mission.repository';
 import { MissionStateMachine } from './domain/mission-state-machine';
 import { MissionTransitionRegistry } from './domain/transitions/mission-transition.registry';
 import {
+  DroneMaintenanceDueError,
   DroneNotAvailableError,
   InvalidMissionScheduleError,
   MissionInPastError,
@@ -53,6 +54,10 @@ export class MissionsService {
         throw new DroneNotAvailableError(drone.id);
       }
 
+      if (this.drones.isMaintenanceDue(drone)) {
+        throw new DroneMaintenanceDueError(drone.id);
+      }
+
       const overlapping = await this.missions.findActiveOverlapping(
         dto.droneId,
         plannedStart,
@@ -83,26 +88,32 @@ export class MissionsService {
   }
 
   async startPreFlight(id: string): Promise<Mission> {
-    return this.transitionsTo(id, MissionStatus.PRE_FLIGHT_CHECK);
+    const { mission } = await this.transitionsTo(
+      id,
+      MissionStatus.PRE_FLIGHT_CHECK,
+    );
+    return mission;
   }
 
   async start(id: string): Promise<Mission> {
-    return this.transitionsTo(id, MissionStatus.IN_PROGRESS);
+    const { mission } = await this.transitionsTo(id, MissionStatus.IN_PROGRESS);
+    return mission;
   }
 
   async complete(
     id: string,
     dto: { flightHoursLogged: number },
-  ): Promise<Mission> {
+  ): Promise<{ mission: Mission; maintenanceDue: boolean }> {
     return this.transitionsTo(id, MissionStatus.COMPLETED, {
       flightHoursLogged: dto.flightHoursLogged,
     });
   }
 
   async abort(id: string, dto: { reason: string }): Promise<Mission> {
-    return this.transitionsTo(id, MissionStatus.ABORTED, {
+    const { mission } = await this.transitionsTo(id, MissionStatus.ABORTED, {
       abortReason: dto.reason,
     });
+    return mission;
   }
 
   findPaginated(query: MissionQueryDto): Promise<PaginatedResult<Mission>> {
@@ -129,7 +140,7 @@ export class MissionsService {
     id: string,
     to: MissionStatus,
     extra: { flightHoursLogged?: number; abortReason?: string } = {},
-  ): Promise<Mission> {
+  ): Promise<{ mission: Mission; maintenanceDue: boolean }> {
     return this.tx.run(async (tx) => {
       const mission = await this.missions.findById(id, tx);
 
@@ -152,14 +163,15 @@ export class MissionsService {
         abortReason: extra.abortReason,
       });
 
+      let maintenanceDue = false;
       if (to === MissionStatus.COMPLETED) {
-        this.drones.recalculateMaintenance(drone);
+        maintenanceDue = this.drones.recalculateMaintenance(drone);
       }
 
       await this.missions.save(mission, tx);
       await this.drones.saveDrone(drone, tx);
 
-      return mission;
+      return { mission, maintenanceDue };
     });
   }
 }

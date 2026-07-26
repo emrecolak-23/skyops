@@ -36,3 +36,12 @@ export class InvalidMissionScheduleError extends DomainError {
     super('Mission planned end must be after planned start');
   }
 }
+
+export class DroneMaintenanceDueError extends DomainError {
+  readonly kind = DomainErrorKind.Conflict;
+  constructor(droneId: string) {
+    super(
+      `Drone ${droneId} has maintenance due and cannot be assigned to a mission`,
+    );
+  }
+}

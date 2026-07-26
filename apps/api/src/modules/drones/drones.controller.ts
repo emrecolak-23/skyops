@@ -29,7 +29,9 @@ export class DronesController {
   async findAll(@Query() query: PaginationQueryDto) {
     const result = await this.dronesService.findPaginated(query);
     return {
-      data: result.data.map(DroneResponseDto.fromEntity),
+      data: result.data.map((d) =>
+        DroneResponseDto.fromEntity(d, this.dronesService.isMaintenanceDue(d)),
+      ),
       meta: {
         page: query.page,
         limit: query.limit,
@@ -44,7 +46,10 @@ export class DronesController {
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<DroneResponseDto> {
     const drone = await this.dronesService.findById(id);
-    return DroneResponseDto.fromEntity(drone);
+    return DroneResponseDto.fromEntity(
+      drone,
+      this.dronesService.isMaintenanceDue(drone),
+    );
   }
 
   @Delete(':id')

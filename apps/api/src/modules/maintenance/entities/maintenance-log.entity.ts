@@ -8,12 +8,12 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { MaintenanceType } from '@skyops/shared';
+import { MaintenanceType, MaintenanceStatus } from '@skyops/shared';
 import { numericTransformer } from 'src/common/persistence/numeric.transformer';
 import { Drone } from 'src/modules/drones/entities/drone.entity';
 
 @Entity('maintenance_logs')
-@Index(['droneId', 'performedAt'])
+@Index(['droneId', 'completedAt'])
 export class MaintenanceLog {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
@@ -31,11 +31,22 @@ export class MaintenanceLog {
   @Column({ name: 'technician_name', type: 'varchar', length: 120 })
   technicianName!: string;
 
+  @Index()
+  @Column({
+    type: 'enum',
+    enum: MaintenanceStatus,
+    default: MaintenanceStatus.IN_PROGRESS,
+  })
+  status!: MaintenanceStatus;
+
   @Column({ type: 'varchar', length: 1000, nullable: true })
   notes!: string | null;
 
-  @Column({ name: 'performed_at', type: 'timestamptz' })
-  performedAt!: Date;
+  @Column({ name: 'started_at', type: 'timestamptz' })
+  startedAt!: Date;
+
+  @Column({ name: 'completed_at', type: 'timestamptz', nullable: true })
+  completedAt!: Date | null;
 
   @Column({
     name: 'flight_hours_at_maintenance',

@@ -16,10 +16,12 @@ export class MissionResponseDto {
   flightHoursLogged!: number | null;
   abortReason!: string | null;
   availableActions!: MissionStatus[];
+  maintenanceDue?: boolean;
 
   static fromEntity(
     mission: Mission,
     availableActions: MissionStatus[],
+    maintenanceDue?: boolean,
   ): MissionResponseDto {
     const dto = new MissionResponseDto();
     dto.id = mission.id;
@@ -36,6 +38,7 @@ export class MissionResponseDto {
     dto.flightHoursLogged = mission.flightHoursLogged;
     dto.abortReason = mission.abortReason;
     dto.availableActions = availableActions;
+    dto.maintenanceDue = maintenanceDue;
     return dto;
   }
 }
