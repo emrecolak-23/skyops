@@ -12,6 +12,14 @@ interface MissionFilters {
   limit?: number;
 }
 
+export function useMission(id: string) {
+  return useQuery({
+    queryKey: ["missions", id],
+    queryFn: () => api.get<Mission>(`/missions/${id}`),
+    enabled: !!id,
+  });
+}
+
 export function useMissions(filters: MissionFilters = {}) {
   const params = new URLSearchParams();
   if (filters.status) params.set("status", filters.status);
