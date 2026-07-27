@@ -13,12 +13,11 @@ import {
 } from "@mantine/core";
 import { useDrones } from "@/features/drones/hooks";
 import { DroneList } from "@/features/drones/components/DroneList";
-import { CreateMissionModal } from "@/features/missions/components/CreateMissionModal";
+import { CreateDroneModal } from "@/features/drones/components/CreateDroneModal";
 
 export default function DronesPage() {
   const [page, setPage] = useState(1);
   const { data, isLoading, error } = useDrones(page, 20);
-
   const [createOpen, setCreateOpen] = useState(false);
 
   return (
@@ -34,7 +33,10 @@ export default function DronesPage() {
       >
         <Group justify="space-between" style={{ flexShrink: 0 }}>
           <Title order={2}>Drones</Title>
-          <Button>New Drone</Button>
+          <Group justify="space-between" style={{ flexShrink: 0 }}>
+            <Title order={2}>Drones</Title>
+            <Button onClick={() => setCreateOpen(true)}>New Drone</Button>
+          </Group>
         </Group>
 
         {isLoading && (
@@ -61,6 +63,10 @@ export default function DronesPage() {
           </>
         )}
       </Box>
+      <CreateDroneModal
+        opened={createOpen}
+        onClose={() => setCreateOpen(false)}
+      />
     </>
   );
 }

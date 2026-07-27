@@ -9,6 +9,7 @@ import { useDrones } from "@/features/drones/hooks";
 import { useCreateMission } from "@/features/missions/hooks";
 import { isAssignableForMission, assignabilityReason } from "@/lib/utils";
 import { MISSION_TYPES } from "@/features/missions/constants";
+import { createMissionSchema } from "../schemas";
 
 export function CreateMissionModal({
   opened,
@@ -29,6 +30,7 @@ export function CreateMissionModal({
   const [siteLocation, setSiteLocation] = useState("");
   const [plannedStart, setPlannedStart] = useState<string | null>(null);
   const [plannedEnd, setPlannedEnd] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const droneOptions = (dronesData?.data ?? []).map((drone) => {
     const reason = assignabilityReason(drone);
@@ -39,6 +41,20 @@ export function CreateMissionModal({
       disabled: !isAssignableForMission(drone),
     };
   });
+
+  const close = () => {
+    reset();
+    setErrors({});
+    onClose();
+  };
+
+  const clearError = (field: string) =>
+    setErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
 
   const reset = () => {
     setName("");
@@ -51,36 +67,39 @@ export function CreateMissionModal({
   };
 
   const submit = () => {
-    if (
-      !name ||
-      !type ||
-      !droneId ||
-      !pilotName ||
-      !siteLocation ||
-      !plannedStart ||
-      !plannedEnd
-    ) {
-      notifications.show({ message: "All fields are required", color: "red" });
+    const parsed = createMissionSchema.safeParse({
+      name,
+      type,
+      droneId,
+      pilotName,
+      siteLocation,
+      plannedStart,
+      plannedEnd,
+    });
+
+    if (!parsed.success) {
+      const next: Record<string, string> = {};
+      for (const issue of parsed.error.issues) {
+        const key = String(issue.path[0]);
+        next[key] ??= issue.message;
+      }
+      setErrors(next);
       return;
     }
+
     createMission.mutate(
       {
-        name,
-        type: type as MissionType,
-        droneId,
-        pilotName,
-        siteLocation,
-        plannedStart: new Date(plannedStart).toISOString(),
-        plannedEnd: new Date(plannedEnd).toISOString(),
+        ...parsed.data,
+        plannedStart: parsed.data.plannedStart.toISOString(),
+        plannedEnd: parsed.data.plannedEnd.toISOString(),
       },
       {
         onSuccess: () => {
           notifications.show({ message: "Mission created", color: "green" });
-          reset();
-          onClose();
+          close();
         },
         onError: (e) =>
-          notifications.show({ message: String(e), color: "red" }),
+          notifications.show({ message: e.message, color: "red" }),
       },
     );
   };
@@ -97,14 +116,22 @@ export function CreateMissionModal({
         <TextInput
           label="Mission Name"
           value={name}
-          onChange={(e) => setName(e.currentTarget.value)}
+          onChange={(e) => {
+            setName(e.currentTarget.value);
+            clearError("name");
+          }}
+          error={errors.name}
           required
         />
         <Select
           label="Type"
           data={MISSION_TYPES}
           value={type}
-          onChange={setType}
+          onChange={(v) => {
+            setType(v);
+            clearError("type");
+          }}
+          error={errors.type}
           required
         />
         <Select
@@ -112,33 +139,55 @@ export function CreateMissionModal({
           placeholder="Select a drone"
           data={droneOptions}
           value={droneId}
-          onChange={setDroneId}
+          onChange={(v) => {
+            setDroneId(v);
+            clearError("droneId");
+          }}
+          error={errors.droneId}
           searchable
           required
         />
         <TextInput
           label="Pilot Name"
           value={pilotName}
-          onChange={(e) => setPilotName(e.currentTarget.value)}
+          onChange={(e) => {
+            setPilotName(e.currentTarget.value);
+            clearError("pilotName");
+          }}
+          error={errors.pilotName}
           required
         />
         <TextInput
           label="Site Location"
           value={siteLocation}
-          onChange={(e) => setSiteLocation(e.currentTarget.value)}
+          onChange={(e) => {
+            setSiteLocation(e.currentTarget.value);
+            clearError("siteLocation");
+          }}
+          error={errors.siteLocation}
           required
         />
-        <Group grow>
+        <Group grow align="flex-start">
           <DateTimePicker
             label="Planned Start"
             value={plannedStart}
-            onChange={setPlannedStart}
+            onChange={(v) => {
+              setPlannedStart(v);
+              clearError("plannedStart");
+              clearError("plannedEnd");
+            }}
+            error={errors.plannedStart}
             required
           />
           <DateTimePicker
             label="Planned End"
             value={plannedEnd}
-            onChange={setPlannedEnd}
+            onChange={(v) => {
+              setPlannedEnd(v);
+              clearError("plannedEnd");
+              clearError("plannedStart");
+            }}
+            error={errors.plannedEnd}
             required
           />
         </Group>

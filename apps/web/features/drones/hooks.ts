@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { Drone, Paginated } from "@/lib/types";
+import { DroneModel } from "@skyops/shared";
 
 export function useDrones(page = 1, limit = 20) {
   return useQuery({
@@ -37,6 +38,21 @@ export function useUpdateDroneNotes() {
       api.patch<Drone>(`/drones/${id}`, { notes }),
     onSuccess: (_data, { id }) => {
       qc.invalidateQueries({ queryKey: ["drones", id] });
+    },
+  });
+}
+
+export function useCreateDrone() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: {
+      serialNumber: string;
+      model: DroneModel;
+      notes?: string;
+    }) => api.post<Drone>("/drones", body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["drones"] });
+      qc.invalidateQueries({ queryKey: ["fleet-health"] });
     },
   });
 }
