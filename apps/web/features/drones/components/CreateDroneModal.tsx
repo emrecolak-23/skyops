@@ -10,10 +10,9 @@ import {
   TextInput,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { DroneModel } from "@skyops/shared";
 import { ApiError } from "@/lib/api";
 import { useCreateDrone } from "@/features/drones/hooks";
-import { DRONE_MODELS, SERIAL_NUMBER_PATTERN } from "../constants";
+import { DRONE_MODELS } from "../constants";
 import { createDroneSchema } from "../schemas";
 
 interface CreateDroneModalProps {
