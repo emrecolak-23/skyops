@@ -8,6 +8,7 @@ import { DroneDetailHeader } from "@/features/drones/components/DroneListHeader"
 import { DroneActions } from "@/features/drones/components/DroneActions";
 import { DroneInfoCards } from "@/features/drones/components/DroneInfoCards";
 import { MissionHistory } from "@/features/missions/components/MissionHistory";
+import { StartMaintenanceModal } from "@/features/maintenance/components/StartMaintenanceModal";
 
 export default function DroneDetailPage({
   params,
@@ -58,6 +59,13 @@ export default function DroneDetailPage({
       >
         <MissionHistory droneId={id} />
       </SimpleGrid>
+
+      <StartMaintenanceModal
+        opened={maintenanceModalOpen}
+        onClose={() => setMaintenanceModalOpen(false)}
+        droneId={id}
+        currentFlightHours={drone.totalFlightHours}
+      />
     </Box>
   );
 }

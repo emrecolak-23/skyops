@@ -1,6 +1,6 @@
 "use client";
-
-import { Button, Group } from "@mantine/core";
+import { modals } from "@mantine/modals";
+import { Button, Group, Text } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { DroneStatus } from "@skyops/shared";
 import { Drone, MaintenanceLog } from "@/lib/types";
@@ -22,23 +22,49 @@ export function DroneActions({
   const completeMaint = useCompleteMaintenance(drone.id);
 
   const handleRetire = () => {
-    retire.mutate(drone.id, {
-      onSuccess: () =>
-        notifications.show({ message: "Drone retired", color: "green" }),
-      onError: (e: Error) =>
-        notifications.show({ message: String(e), color: "red" }),
+    modals.openConfirmModal({
+      title: "Retire Drone",
+      children: (
+        <Text size="sm">
+          Are you sure you want to retire {drone.serialNumber}? This cannot be
+          undone.
+        </Text>
+      ),
+      labels: { confirm: "Retire", cancel: "Cancel" },
+      confirmProps: { color: "red" },
+      onConfirm: () => {
+        retire.mutate(drone.id, {
+          onSuccess: () =>
+            notifications.show({ message: "Drone retired", color: "green" }),
+          onError: (e) =>
+            notifications.show({ message: String(e), color: "red" }),
+        });
+      },
     });
   };
 
   const handleComplete = () => {
     if (!inProgressLog) return;
-    completeMaint.mutate(inProgressLog.id, {
-      onSuccess: () =>
-        notifications.show({
-          message: "Maintenance completed",
-          color: "green",
-        }),
-      onError: (e) => notifications.show({ message: String(e), color: "red" }),
+    modals.openConfirmModal({
+      title: "Complete Maintenance",
+      children: (
+        <Text size="sm">
+          Mark this maintenance as complete? The drone will return to service.
+        </Text>
+      ),
+      labels: { confirm: "Complete", cancel: "Cancel" },
+      confirmProps: { color: "green" },
+      onConfirm: () => {
+        completeMaint.mutate(inProgressLog.id, {
+          onSuccess: () =>
+            notifications.show({
+              message: "Maintenance completed",
+              color: "green",
+            }),
+          onError: (e) =>
+            notifications.show({ message: String(e), color: "red" }),
+        });
+      },
     });
   };
 
