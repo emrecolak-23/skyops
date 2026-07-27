@@ -20,6 +20,9 @@ export class Drone {
   @Column({ type: 'enum', enum: DroneModel })
   model!: DroneModel;
 
+  @Column({ type: 'varchar', length: 1000, nullable: true })
+  notes!: string | null;
+
   @Index()
   @Column({ type: 'enum', enum: DroneStatus, default: DroneStatus.AVAILABLE })
   status!: DroneStatus;

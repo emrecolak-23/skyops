@@ -48,6 +48,7 @@ export class DronesService {
       totalFlightHours: 0,
       flightHoursAtLastMaintenance: 0,
       lastMaintenanceDate: null,
+      notes: dto.notes,
       registeredAt: now,
     });
 
@@ -127,5 +128,13 @@ export class DronesService {
   isMaintenanceDue(drone: Drone): boolean {
     const ctx = buildMaintenanceContext(drone, this.clock.now());
     return this.maintenancePolicy.evaluate(ctx).isDue;
+  }
+
+  async update(id: string, dto: { notes?: string | null }): Promise<Drone> {
+    const drone = await this.findById(id);
+    if (dto.notes !== undefined) {
+      drone.notes = dto.notes;
+    }
+    return this.drones.save(drone);
   }
 }

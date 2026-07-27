@@ -1,4 +1,10 @@
-import { IsEnum, IsString, Matches } from 'class-validator';
+import {
+  IsEnum,
+  IsOptional,
+  IsString,
+  Matches,
+  MaxLength,
+} from 'class-validator';
 import { DroneModel } from '@skyops/shared';
 import { SERIAL_NUMBER_PATTERN } from '../domain/searial-number';
 
@@ -12,4 +18,9 @@ export class CreateDroneDto {
 
   @IsEnum(DroneModel)
   model!: DroneModel;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  notes?: string;
 }

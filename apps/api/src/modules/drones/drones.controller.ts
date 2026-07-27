@@ -7,12 +7,13 @@ import {
   HttpStatus,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Query,
 } from '@nestjs/common';
 import { PaginationQueryDto } from 'src/common/pagination/pagination-query.dto';
 import { DronesService } from './drones.service';
-import { CreateDroneDto, DroneResponseDto } from './dto';
+import { CreateDroneDto, DroneResponseDto, UpdateDroneDto } from './dto';
 
 @Controller('drones')
 export class DronesController {
@@ -58,5 +59,17 @@ export class DronesController {
   ): Promise<DroneResponseDto> {
     const drone = await this.dronesService.retire(id);
     return DroneResponseDto.fromEntity(drone);
+  }
+
+  @Patch(':id')
+  async update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateDroneDto,
+  ): Promise<DroneResponseDto> {
+    const drone = await this.dronesService.update(id, dto);
+    return DroneResponseDto.fromEntity(
+      drone,
+      this.dronesService.isMaintenanceDue(drone),
+    );
   }
 }

@@ -1,8 +1,8 @@
-import { IsEnum, IsOptional } from 'class-validator';
-import { DroneStatus } from '@skyops/shared';
+import { IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class UpdateDroneDto {
   @IsOptional()
-  @IsEnum(DroneStatus)
-  status?: DroneStatus;
+  @IsString()
+  @MaxLength(1000)
+  notes?: string | null;
 }

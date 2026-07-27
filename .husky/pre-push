@@ -1,0 +1,3 @@
+pnpm --filter @skyops/shared build
+pnpm --filter @skyops/api build
+pnpm --filter @skyops/api test

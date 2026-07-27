@@ -147,4 +147,43 @@ describe('DronesService', () => {
       );
     });
   });
+
+  describe('update', () => {
+    it('updates the notes field', async () => {
+      const drone = await service.create({
+        serialNumber: 'SKY-A1B2-C3D4',
+        model: DroneModel.PHANTOM_4,
+      });
+      const updated = await service.update(drone.id, {
+        notes: 'Left motor vibrates, monitor.',
+      });
+      expect(updated.notes).toBe('Left motor vibrates, monitor.');
+    });
+
+    it('leaves notes untouched when not provided', async () => {
+      const drone = await service.create({
+        serialNumber: 'SKY-A1B2-C3D4',
+        model: DroneModel.PHANTOM_4,
+      });
+      await service.update(drone.id, { notes: 'first note' });
+      const updated = await service.update(drone.id, {});
+      expect(updated.notes).toBe('first note');
+    });
+
+    it('clears notes when explicitly set to null', async () => {
+      const drone = await service.create({
+        serialNumber: 'SKY-A1B2-C3D4',
+        model: DroneModel.PHANTOM_4,
+      });
+      await service.update(drone.id, { notes: 'temp' });
+      const updated = await service.update(drone.id, { notes: null });
+      expect(updated.notes).toBeNull();
+    });
+
+    it('throws DroneNotFoundError for unknown id', async () => {
+      await expect(
+        service.update('00000000-0000-0000-0000-000000000000', { notes: 'x' }),
+      ).rejects.toThrow(DroneNotFoundError);
+    });
+  });
 });
