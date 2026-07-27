@@ -5,6 +5,7 @@ import { Button, Modal, NumberInput, Stack } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { useMissionTransition } from "@/features/missions/hooks";
 import { completeMissionSchema } from "../schemas";
+import { Mission } from "@/lib/types";
 
 interface MissionCompleteModalProps {
   opened: boolean;
@@ -39,7 +40,7 @@ export function MissionCompleteModal({
     transition.mutate(
       { id: missionId, action: "complete", body: parsed.data },
       {
-        onSuccess: (m: any) => {
+        onSuccess: (m: Mission) => {
           notifications.show({
             message: m.maintenanceDue
               ? "Mission completed — drone now requires maintenance"

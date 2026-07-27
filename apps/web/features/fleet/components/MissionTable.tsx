@@ -2,12 +2,13 @@ import { Table, Badge, Text, ScrollArea } from "@mantine/core";
 import Link from "next/link";
 import { STATUS_COLORS } from "../../missions/constants";
 import { MissionStatus } from "@skyops/shared";
+import { Mission } from "@/lib/types";
 
 export function MissionTable({
   missions,
   dateField,
 }: {
-  missions: any[];
+  missions: Mission[];
   dateField: "plannedStart" | "actualEnd";
 }) {
   if (missions.length === 0) {

@@ -7,38 +7,46 @@ on:
     branches: [main]
 
 jobs:
-  test:
+  backend:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
         with:
           version: 9
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
       - name: Build shared package
         run: pnpm --filter @skyops/shared build
-
       - name: Lint
         run: pnpm --filter @skyops/api lint
-
       - name: Build
         run: pnpm --filter @skyops/api build
-
       - name: Unit tests
         run: pnpm --filter @skyops/api test
-
       - name: Integration tests
         run: pnpm --filter @skyops/api test:e2e
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build shared package
+        run: pnpm --filter @skyops/shared build
+      - name: Lint frontend
+        run: pnpm --filter web lint
+      - name: Build frontend
+        run: pnpm --filter web build
