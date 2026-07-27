@@ -14,6 +14,7 @@ import { notifications } from "@mantine/notifications";
 import { useOpenMaintenance } from "@/features/maintenance/hooks";
 import { MaintenanceType } from "@skyops/shared";
 import { MAINTENANCE_TYPES } from "../constants";
+import { startMaintenanceSchema } from "../schemas";
 
 interface StartMaintenanceModalProps {
   opened: boolean;
@@ -36,26 +37,37 @@ export function StartMaintenanceModal({
   const [flightHours, setFlightHours] = useState<number | string>(
     currentFlightHours,
   );
-
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const openMaintenance = useOpenMaintenance();
 
+  const clearError = (field: string) =>
+    setErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+
   const handleSubmit = () => {
-    if (!type || !technicianName.trim()) {
-      notifications.show({
-        message: "Type and technician are required",
-        color: "red",
-      });
+    const parsed = startMaintenanceSchema.safeParse({
+      type,
+      technicianName,
+      notes,
+      flightHoursAtMaintenance: flightHours,
+    });
+
+    if (!parsed.success) {
+      const next: Record<string, string> = {};
+      for (const issue of parsed.error.issues) {
+        const key = String(issue.path[0]);
+        next[key] ??= issue.message;
+      }
+      setErrors(next);
       return;
     }
 
     openMaintenance.mutate(
-      {
-        droneId,
-        type: type as MaintenanceType,
-        technicianName: technicianName.trim(),
-        notes: notes.trim() || undefined,
-        flightHoursAtMaintenance: Number(flightHours),
-      },
+      { droneId, ...parsed.data },
       {
         onSuccess: () => {
           notifications.show({
@@ -65,7 +77,7 @@ export function StartMaintenanceModal({
           resetAndClose();
         },
         onError: (e) =>
-          notifications.show({ message: String(e), color: "red" }),
+          notifications.show({ message: e.message, color: "red" }),
       },
     );
   };
@@ -75,6 +87,7 @@ export function StartMaintenanceModal({
     setTechnicianName("");
     setNotes("");
     setFlightHours(currentFlightHours);
+    setErrors({});
     onClose();
   };
 
@@ -90,27 +103,46 @@ export function StartMaintenanceModal({
           label="Maintenance Type"
           data={MAINTENANCE_TYPES}
           value={type}
-          onChange={setType}
+          onChange={(v) => {
+            setType(v);
+            clearError("type");
+          }}
+          error={errors.type}
           required
         />
         <TextInput
           label="Technician Name"
           value={technicianName}
-          onChange={(e) => setTechnicianName(e.currentTarget.value)}
+          onChange={(e) => {
+            setTechnicianName(e.currentTarget.value);
+            clearError("technicianName");
+          }}
+          error={errors.technicianName}
+          maxLength={120}
           required
         />
         <NumberInput
           label="Flight Hours at Maintenance"
           value={flightHours}
-          onChange={setFlightHours}
+          onChange={(v) => {
+            setFlightHours(v);
+            clearError("flightHoursAtMaintenance");
+          }}
+          error={errors.flightHoursAtMaintenance}
           min={0}
+          max={999999}
           decimalScale={2}
           description={`Current total: ${currentFlightHours}h`}
         />
         <Textarea
           label="Notes (optional)"
           value={notes}
-          onChange={(e) => setNotes(e.currentTarget.value)}
+          onChange={(e) => {
+            setNotes(e.currentTarget.value);
+            clearError("notes");
+          }}
+          error={errors.notes}
+          maxLength={1000}
           minRows={2}
         />
         <Button onClick={handleSubmit} loading={openMaintenance.isPending}>
