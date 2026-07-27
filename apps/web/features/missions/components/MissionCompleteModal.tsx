@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button, Modal, NumberInput, Stack } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { useMissionTransition } from "@/features/missions/hooks";
+import { completeMissionSchema } from "../schemas";
 
 interface MissionCompleteModalProps {
   opened: boolean;
@@ -17,22 +18,26 @@ export function MissionCompleteModal({
   missionId,
 }: MissionCompleteModalProps) {
   const [hours, setHours] = useState<number | string>("");
+  const [error, setError] = useState<string | null>(null);
+
   const transition = useMissionTransition();
 
+  const close = () => {
+    setHours("");
+    setError(null);
+    onClose();
+  };
+
   const submit = () => {
-    if (!hours || Number(hours) <= 0) {
-      notifications.show({
-        message: "Flight hours must be greater than 0",
-        color: "red",
-      });
+    const parsed = completeMissionSchema.safeParse({
+      flightHoursLogged: hours,
+    });
+    if (!parsed.success) {
+      setError(parsed.error.issues[0].message);
       return;
     }
     transition.mutate(
-      {
-        id: missionId,
-        action: "complete",
-        body: { flightHoursLogged: Number(hours) },
-      },
+      { id: missionId, action: "complete", body: parsed.data },
       {
         onSuccess: (m: any) => {
           notifications.show({
@@ -41,23 +46,27 @@ export function MissionCompleteModal({
               : "Mission completed",
             color: m.maintenanceDue ? "orange" : "green",
           });
-          setHours("");
-          onClose();
+          close();
         },
         onError: (e) =>
-          notifications.show({ message: String(e), color: "red" }),
+          notifications.show({ message: e.message, color: "red" }),
       },
     );
   };
 
   return (
-    <Modal opened={opened} onClose={onClose} title="Complete Mission" centered>
+    <Modal opened={opened} onClose={close} title="Complete Mission" centered>
       <Stack>
         <NumberInput
           label="Flight Hours Logged"
           value={hours}
-          onChange={setHours}
+          onChange={(v) => {
+            setHours(v);
+            setError(null);
+          }}
+          error={error}
           min={0.01}
+          max={1000}
           decimalScale={2}
           required
         />

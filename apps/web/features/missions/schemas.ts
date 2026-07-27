@@ -29,3 +29,19 @@ export const createMissionSchema = z
     message: "Mission cannot be scheduled in the past",
     path: ["plannedStart"],
   });
+
+export const abortMissionSchema = z.object({
+  reason: z
+    .string()
+    .trim()
+    .min(10, "Reason must be at least 10 characters")
+    .max(200, "Reason must be at most 200 characters"),
+});
+
+export const completeMissionSchema = z.object({
+  flightHoursLogged: z.coerce
+    .number("Flight hours are required")
+    .min(0.01, "Flight hours must be greater than 0")
+    .max(1000, "Flight hours cannot exceed 1000")
+    .refine((n) => Math.round(n * 100) / 100 === n, "At most 2 decimal places"),
+});
