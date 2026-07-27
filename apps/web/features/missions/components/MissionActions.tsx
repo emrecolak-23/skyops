@@ -7,6 +7,7 @@ import { Mission } from "@/lib/types";
 import { useMissionTransition } from "@/features/missions/hooks";
 import { ACTION_CONFIG } from "../constants";
 import { MissionCompleteModal } from "./MissionCompleteModal";
+import { MissionAbortModal } from "./MissionAbortModal";
 
 export function MissionActions({ mission }: { mission: Mission }) {
   const transition = useMissionTransition();
@@ -55,11 +56,11 @@ export function MissionActions({ mission }: { mission: Mission }) {
         onClose={() => setModal(null)}
         missionId={mission.id}
       />
-      {/* <AbortModal
-        opened={modal === 'abort'}
+      <MissionAbortModal
+        opened={modal === "abort"}
         onClose={() => setModal(null)}
         missionId={mission.id}
-      /> */}
+      />
     </>
   );
 }

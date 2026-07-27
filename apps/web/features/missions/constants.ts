@@ -1,4 +1,4 @@
-import { MissionStatus } from "@skyops/shared";
+import { MissionStatus, MissionType } from "@skyops/shared";
 
 export const STATUS_COLORS: Record<MissionStatus, string> = {
   [MissionStatus.PLANNED]: "blue",
@@ -37,3 +37,12 @@ export const ACTION_CONFIG: Record<
     needsModal: "abort",
   },
 };
+
+export const MISSION_TYPES = [
+  {
+    value: MissionType.WIND_TURBINE_INSPECTION,
+    label: "Wind Turbine Inspection",
+  },
+  { value: MissionType.SOLAR_PANEL_SURVEY, label: "Solar Panel Survey" },
+  { value: MissionType.POWER_LINE_PATROL, label: "Power Line Patrol" },
+];
