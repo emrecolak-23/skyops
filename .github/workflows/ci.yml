@@ -50,6 +50,8 @@ jobs:
         run: pnpm --filter web lint
       - name: Typecheck frontend
         run: pnpm --filter web typecheck
+      - name: Unit tests
+        run: pnpm --filter web test
       - name: Build frontend
         run: pnpm --filter web build
 

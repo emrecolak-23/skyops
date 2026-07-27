@@ -14,6 +14,7 @@ import { ApiError } from "@/lib/api";
 import { useCreateDrone } from "@/features/drones/hooks";
 import { DRONE_MODELS } from "../constants";
 import { createDroneSchema } from "../schemas";
+import { useRouter } from "next/navigation";
 
 interface CreateDroneModalProps {
   opened: boolean;
@@ -21,6 +22,7 @@ interface CreateDroneModalProps {
 }
 
 export function CreateDroneModal({ opened, onClose }: CreateDroneModalProps) {
+  const router = useRouter();
   const [serialNumber, setSerialNumber] = useState("");
   const [model, setModel] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
@@ -62,6 +64,7 @@ export function CreateDroneModal({ opened, onClose }: CreateDroneModalProps) {
           color: "green",
         });
         close();
+        router.push(`/drones/${drone.id}`);
       },
       onError: (e) => {
         if (e instanceof ApiError && e.status === 409) {

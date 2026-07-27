@@ -8,7 +8,12 @@ export function DroneDetailHeader({ drone }: { drone: Drone }) {
   return (
     <Group>
       <Title order={2}>{drone.serialNumber}</Title>
-      <Badge color={STATUS_COLORS[drone.status]} size="lg" variant="light">
+      <Badge
+        data-testid="drone-status"
+        color={STATUS_COLORS[drone.status]}
+        size="lg"
+        variant="light"
+      >
         {drone.status}
       </Badge>
       {drone.maintenanceDue && (
