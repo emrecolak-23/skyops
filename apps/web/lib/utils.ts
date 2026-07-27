@@ -34,3 +34,11 @@ export function assignabilityReason(drone: Drone): string | null {
   if (drone.status === DroneStatus.IN_MISSION) return "on mission";
   return null;
 }
+
+export function humanizeEnum(value: string): string {
+  return value
+    .toLowerCase()
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}

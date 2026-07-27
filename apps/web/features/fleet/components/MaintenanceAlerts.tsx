@@ -11,6 +11,7 @@ import {
 } from "@mantine/core";
 import Link from "next/link";
 import { FleetHealth } from "@/lib/types";
+import { humanizeEnum } from "@/lib/utils";
 
 export function MaintenanceAlerts({ health }: { health: FleetHealth }) {
   const overdue = health.overdueMaintenance;
@@ -51,7 +52,7 @@ export function MaintenanceAlerts({ health }: { health: FleetHealth }) {
                       {drone.serialNumber}
                     </Link>
                   </Table.Td>
-                  <Table.Td>{drone.model}</Table.Td>
+                  <Table.Td>{humanizeEnum(drone.model)}</Table.Td>{" "}
                   <Table.Td>
                     {drone.nextMaintenanceDueDate
                       ? new Date(

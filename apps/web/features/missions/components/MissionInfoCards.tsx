@@ -3,7 +3,7 @@
 import { Card, Text, SimpleGrid, Anchor } from "@mantine/core";
 import Link from "next/link";
 import { Mission } from "@/lib/types";
-import { formatFlightHours, formatDuration } from "@/lib/utils";
+import { formatFlightHours, formatDuration, humanizeEnum } from "@/lib/utils";
 
 function Info({ label, value }: { label: string; value: React.ReactNode }) {
   return (
@@ -19,7 +19,7 @@ function Info({ label, value }: { label: string; value: React.ReactNode }) {
 export function MissionInfoCards({ mission }: { mission: Mission }) {
   return (
     <SimpleGrid cols={{ base: 2, sm: 3 }} spacing="md">
-      <Info label="Type" value={mission.type} />
+      <Info label="Type" value={humanizeEnum(mission.type)} />{" "}
       <Info label="Pilot" value={mission.pilotName} />
       <Info label="Site" value={mission.siteLocation} />
       <Info

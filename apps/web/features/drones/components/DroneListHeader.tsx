@@ -1,7 +1,6 @@
 "use client";
 
 import { Group, Title, Badge } from "@mantine/core";
-import { DroneStatus } from "@skyops/shared";
 import { Drone } from "@/lib/types";
 import { STATUS_COLORS } from "../constants";
 

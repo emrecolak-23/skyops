@@ -4,6 +4,7 @@ import { Table, Badge, Text, ScrollArea } from "@mantine/core";
 import { useRouter } from "next/navigation";
 import { Mission } from "@/lib/types";
 import { STATUS_COLORS } from "../constants";
+import { humanizeEnum } from "@/lib/utils";
 
 export function MissionList({ missions }: { missions: Mission[] }) {
   const router = useRouter();
@@ -32,7 +33,7 @@ export function MissionList({ missions }: { missions: Mission[] }) {
               onClick={() => router.push(`/missions/${m.id}`)}
             >
               <Table.Td fw={500}>{m.name}</Table.Td>
-              <Table.Td>{m.type}</Table.Td>
+              <Table.Td>{humanizeEnum(m.type)}</Table.Td>
               <Table.Td>
                 <Badge color={STATUS_COLORS[m.status]} variant="light">
                   {m.status}

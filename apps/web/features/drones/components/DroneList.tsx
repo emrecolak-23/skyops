@@ -2,7 +2,7 @@
 
 import { Table, Badge, Text, ScrollArea } from "@mantine/core";
 import { useRouter } from "next/navigation";
-import { formatFlightHours } from "@/lib/utils";
+import { formatFlightHours, humanizeEnum } from "@/lib/utils";
 import { STATUS_COLORS } from "../constants";
 import { Drone } from "@/lib/types";
 
@@ -13,16 +13,22 @@ export function DroneList({ drones }: { drones: Drone[] }) {
     return <Text c="dimmed">No drones found.</Text>;
   }
 
+  const TABLE_HEADERS = [
+    { label: "Serial", key: "serialNumber" },
+    { label: "Model", key: "model" },
+    { label: "Status", key: "status" },
+    { label: "Flight Hours", key: "totalFlightHours" },
+    { label: "Maintenance", key: "maintenanceDue" },
+  ];
+
   return (
     <ScrollArea style={{ flex: 1, minHeight: 0 }}>
       <Table stickyHeader highlightOnHover>
         <Table.Thead>
           <Table.Tr>
-            <Table.Th>Serial</Table.Th>
-            <Table.Th>Model</Table.Th>
-            <Table.Th>Status</Table.Th>
-            <Table.Th>Flight Hours</Table.Th>
-            <Table.Th>Maintenance</Table.Th>
+            {TABLE_HEADERS.map(({ label, key }) => (
+              <Table.Th key={key}>{label}</Table.Th>
+            ))}
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
@@ -33,7 +39,7 @@ export function DroneList({ drones }: { drones: Drone[] }) {
               onClick={() => router.push(`/drones/${drone.id}`)}
             >
               <Table.Td>{drone.serialNumber}</Table.Td>
-              <Table.Td>{drone.model}</Table.Td>
+              <Table.Td>{humanizeEnum(drone.model)}</Table.Td>{" "}
               <Table.Td>
                 <Badge color={STATUS_COLORS[drone.status]} variant="light">
                   {drone.status}

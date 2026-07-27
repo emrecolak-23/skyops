@@ -3,20 +3,7 @@
 import { Card, Group, Text, Title, SimpleGrid, Badge } from "@mantine/core";
 import { DroneStatus } from "@skyops/shared";
 import { FleetHealth } from "@/lib/types";
-
-const STATUS_COLORS: Record<DroneStatus, string> = {
-  [DroneStatus.AVAILABLE]: "green",
-  [DroneStatus.IN_MISSION]: "blue",
-  [DroneStatus.MAINTENANCE]: "orange",
-  [DroneStatus.RETIRED]: "gray",
-};
-
-const STATUS_LABELS: Record<DroneStatus, string> = {
-  [DroneStatus.AVAILABLE]: "Available",
-  [DroneStatus.IN_MISSION]: "In Mission",
-  [DroneStatus.MAINTENANCE]: "Maintenance",
-  [DroneStatus.RETIRED]: "Retired",
-};
+import { STATUS_COLORS, STATUS_LABELS } from "../constants";
 
 export function FleetOverview({ health }: { health: FleetHealth }) {
   return (
