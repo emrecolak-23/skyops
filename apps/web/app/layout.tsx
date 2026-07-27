@@ -6,6 +6,7 @@ import { Notifications } from "@mantine/notifications";
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 import "@mantine/dates/styles.css";
+import { ModalsProvider } from "@mantine/modals";
 import { AppLayout } from "@/components/layouts/AppLayout";
 
 import { Providers } from "./providers";
@@ -37,12 +38,14 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <MantineProvider>
-          <Notifications />
-          {
-            <Providers>
-              <AppLayout>{children}</AppLayout>
-            </Providers>
-          }
+          <ModalsProvider>
+            <Notifications />
+            {
+              <Providers>
+                <AppLayout>{children}</AppLayout>
+              </Providers>
+            }
+          </ModalsProvider>
         </MantineProvider>
       </body>
     </html>
