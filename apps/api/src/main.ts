@@ -28,4 +28,4 @@ async function bootstrap() {
   const port = config.getOrThrow('app.port', { infer: true });
   await app.listen(port);
 }
-bootstrap();
+void bootstrap();

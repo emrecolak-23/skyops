@@ -17,7 +17,7 @@ describe('Mission lifecyle integration', () => {
   });
 
   it('runs the full lifecylce: create drone -> schedule -> start -> complete -> verify', async () => {
-    const server = ctx.app.getHttpServer();
+    const server = ctx.server;
 
     const droneRes = await request(server)
       .post('/api/drones')

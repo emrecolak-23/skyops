@@ -17,7 +17,7 @@ describe('Mission overlap constraint (integration)', () => {
   });
 
   it('rejects a second mission overlapping the same drone', async () => {
-    const server = ctx.app.getHttpServer();
+    const server = ctx.server;
 
     const droneRes = await request(server)
       .post('/api/drones')
@@ -60,7 +60,7 @@ describe('Mission overlap constraint (integration)', () => {
   });
 
   it('allows adjacent (non-overlapping) missions on the same drone', async () => {
-    const server = ctx.app.getHttpServer();
+    const server = ctx.server;
 
     const droneRes = await request(server)
       .post('/api/drones')

@@ -8,10 +8,12 @@ import { DataSource } from 'typeorm';
 import { AppModule } from 'src/app.module';
 import { DomainExceptionFilter } from 'src/common/filters/domain-exception.filter';
 import { dataSourceOptions } from 'src/database/typeorm.config';
+import type { Server } from 'node:http';
 
 export interface IntegrationContext {
   app: INestApplication;
   dataSource: DataSource;
+  server: Server;
   container: StartedPostgreSqlContainer;
 }
 
@@ -52,7 +54,7 @@ export async function setupIntegration(): Promise<IntegrationContext> {
   await app.init();
 
   const dataSource = app.get(DataSource);
-  return { app, dataSource, container };
+  return { app, server: app.getHttpServer() as Server, dataSource, container };
 }
 
 export async function teardownIntegration(

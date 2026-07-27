@@ -17,7 +17,7 @@ describe('Maintenance lifecycle (integration)', () => {
   });
 
   it('opens maintenance (drone -> MAINTENANCE) and completes it (drone -> AVAILABLE, tracking updated)', async () => {
-    const server = ctx.app.getHttpServer();
+    const server = ctx.server;
 
     const droneRes = await request(server)
       .post('/api/drones')
@@ -60,7 +60,7 @@ describe('Maintenance lifecycle (integration)', () => {
   });
 
   it('rejects opening maintenance for a drone that is in a mission', async () => {
-    const server = ctx.app.getHttpServer();
+    const server = ctx.server;
 
     const droneRes = await request(server)
       .post('/api/drones')
