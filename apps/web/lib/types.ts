@@ -36,6 +36,7 @@ export interface Mission {
   abortReason: string | null;
   availableActions: MissionStatus[];
   maintenanceDue?: boolean;
+  droneSerialNumber: string | null;
 }
 
 export interface MaintenanceLog {

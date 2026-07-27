@@ -17,6 +17,7 @@ export class MissionResponseDto {
   abortReason!: string | null;
   availableActions!: MissionStatus[];
   maintenanceDue?: boolean;
+  droneSerialNumber!: string | null;
 
   static fromEntity(
     mission: Mission,
@@ -39,6 +40,7 @@ export class MissionResponseDto {
     dto.abortReason = mission.abortReason;
     dto.availableActions = availableActions;
     dto.maintenanceDue = maintenanceDue;
+    dto.droneSerialNumber = mission.drone?.serialNumber ?? null;
     return dto;
   }
 }

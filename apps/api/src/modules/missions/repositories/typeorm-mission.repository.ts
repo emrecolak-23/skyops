@@ -27,7 +27,11 @@ export class TypeormMissionRepository implements IMissionRepository {
   }
 
   findById(id: string, tx?: Tx): Promise<Mission | null> {
-    return this.manager(tx).findOne({ where: { id } });
+    return this.manager(tx)
+      .createQueryBuilder('mission')
+      .innerJoinAndSelect('mission.drone', 'drone')
+      .where('mission.id = :id', { id })
+      .getOne();
   }
 
   async findPaginated(
