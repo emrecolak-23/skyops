@@ -1,3 +1,5 @@
 pnpm --filter @skyops/shared build
 pnpm --filter @skyops/api build
 pnpm --filter @skyops/api test
+pnpm --filter web lint
+pnpm --filter web exec tsc --noEmit

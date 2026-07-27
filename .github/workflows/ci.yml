@@ -48,5 +48,8 @@ jobs:
         run: pnpm --filter @skyops/shared build
       - name: Lint frontend
         run: pnpm --filter web lint
+      - name: Typecheck frontend
+        run: pnpm --filter web typecheck
       - name: Build frontend
         run: pnpm --filter web build
+

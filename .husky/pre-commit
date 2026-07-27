@@ -1,1 +1,2 @@
 pnpm --filter @skyops/api lint
+pnpm --filter web lint
