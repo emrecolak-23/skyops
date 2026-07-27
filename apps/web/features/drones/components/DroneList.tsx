@@ -3,7 +3,7 @@
 import { Table, Badge, Text, ScrollArea } from "@mantine/core";
 import { useRouter } from "next/navigation";
 import { formatFlightHours, humanizeEnum } from "@/lib/utils";
-import { STATUS_COLORS } from "../constants";
+import { STATUS_COLORS, DRONE_LIST_TABLE_HEADERS } from "../constants";
 import { Drone } from "@/lib/types";
 
 export function DroneList({ drones }: { drones: Drone[] }) {
@@ -13,20 +13,12 @@ export function DroneList({ drones }: { drones: Drone[] }) {
     return <Text c="dimmed">No drones found.</Text>;
   }
 
-  const TABLE_HEADERS = [
-    { label: "Serial", key: "serialNumber" },
-    { label: "Model", key: "model" },
-    { label: "Status", key: "status" },
-    { label: "Flight Hours", key: "totalFlightHours" },
-    { label: "Maintenance", key: "maintenanceDue" },
-  ];
-
   return (
     <ScrollArea style={{ flex: 1, minHeight: 0 }}>
       <Table stickyHeader highlightOnHover>
         <Table.Thead>
           <Table.Tr>
-            {TABLE_HEADERS.map(({ label, key }) => (
+            {DRONE_LIST_TABLE_HEADERS.map(({ label, key }) => (
               <Table.Th key={key}>{label}</Table.Th>
             ))}
           </Table.Tr>

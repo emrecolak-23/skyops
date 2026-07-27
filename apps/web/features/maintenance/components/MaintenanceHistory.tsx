@@ -4,6 +4,7 @@ import { Card, Title, Table, Badge, Text, ScrollArea } from "@mantine/core";
 import { MaintenanceStatus } from "@skyops/shared";
 import { useMaintenanceLogs } from "@/features/maintenance/hooks";
 import { formatFlightHours, humanizeEnum } from "@/lib/utils";
+import { MAINTENANCE_HISTORY_HEADERS } from "../constants";
 
 export function MaintenanceHistory({ droneId }: { droneId: string }) {
   const { data, isLoading } = useMaintenanceLogs(droneId);
@@ -30,12 +31,9 @@ export function MaintenanceHistory({ droneId }: { droneId: string }) {
           <Table stickyHeader>
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>Type</Table.Th>
-                <Table.Th>Status</Table.Th>
-                <Table.Th>Technician</Table.Th>
-                <Table.Th>Hours</Table.Th>
-                <Table.Th>Started</Table.Th>
-                <Table.Th>Completed</Table.Th>
+                {MAINTENANCE_HISTORY_HEADERS.map(({ label, key }) => (
+                  <Table.Th key={key}>{label}</Table.Th>
+                ))}
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>

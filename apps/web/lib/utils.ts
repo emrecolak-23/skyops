@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import { Drone } from "@/lib/types";
 import { DroneStatus } from "@skyops/shared";
 
@@ -41,4 +42,21 @@ export function humanizeEnum(value: string): string {
     .split("_")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
+}
+
+export function defaultPlannedStart() {
+  return dayjs()
+    .add(1, "day")
+    .hour(9)
+    .minute(0)
+    .second(0)
+    .format("YYYY-MM-DD HH:mm:ss");
+}
+export function defaultPlannedEnd() {
+  return dayjs()
+    .add(1, "day")
+    .hour(11)
+    .minute(0)
+    .second(0)
+    .format("YYYY-MM-DD HH:mm:ss");
 }

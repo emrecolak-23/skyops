@@ -3,7 +3,7 @@
 import { Table, Badge, Text, ScrollArea } from "@mantine/core";
 import { useRouter } from "next/navigation";
 import { Mission } from "@/lib/types";
-import { STATUS_COLORS } from "../constants";
+import { STATUS_COLORS, MISSION_TABLE_HEADERS } from "../constants";
 import { humanizeEnum } from "@/lib/utils";
 
 export function MissionList({ missions }: { missions: Mission[] }) {
@@ -18,11 +18,9 @@ export function MissionList({ missions }: { missions: Mission[] }) {
       <Table stickyHeader highlightOnHover>
         <Table.Thead>
           <Table.Tr>
-            <Table.Th>Name</Table.Th>
-            <Table.Th>Type</Table.Th>
-            <Table.Th>Status</Table.Th>
-            <Table.Th>Pilot</Table.Th>
-            <Table.Th>Planned Start</Table.Th>
+            {MISSION_TABLE_HEADERS.map(({ label, key }) => (
+              <Table.Th key={key}>{label}</Table.Th>
+            ))}
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>

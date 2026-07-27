@@ -10,7 +10,12 @@ export function MissionDetailHeader({ mission }: { mission: Mission }) {
     <Group justify="space-between">
       <Group>
         <Title order={2}>{mission.name}</Title>
-        <Badge color={STATUS_COLORS[mission.status]} size="lg" variant="light">
+        <Badge
+          data-testid="mission-status"
+          color={STATUS_COLORS[mission.status]}
+          size="lg"
+          variant="light"
+        >
           {mission.status}
         </Badge>
         {mission.maintenanceDue && (

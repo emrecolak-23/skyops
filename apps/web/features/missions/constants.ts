@@ -46,3 +46,11 @@ export const MISSION_TYPES = [
   { value: MissionType.SOLAR_PANEL_SURVEY, label: "Solar Panel Survey" },
   { value: MissionType.POWER_LINE_PATROL, label: "Power Line Patrol" },
 ];
+
+export const MISSION_TABLE_HEADERS = [
+  { label: "Name", key: "name" },
+  { label: "Type", key: "type" },
+  { label: "Status", key: "status" },
+  { label: "Pilot", key: "pilotName" },
+  { label: "Planned Start", key: "plannedStart" },
+];

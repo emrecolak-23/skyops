@@ -2,16 +2,12 @@ FROM node:25-alpine3.22 AS base
 RUN npm install -g pnpm@10.22.0
 WORKDIR /app
 
-# ---- deps ----
-FROM base AS deps
+# ---- build ----
+FROM base AS build
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 COPY packages/shared/package.json ./packages/shared/
 COPY apps/api/package.json ./apps/api/
 RUN pnpm install --frozen-lockfile
-
-# ---- build ----
-FROM base AS build
-COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN pnpm --filter @skyops/shared build
 RUN pnpm --filter @skyops/api build
