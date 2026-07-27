@@ -1,7 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { Mission, Paginated } from "@/lib/types";
-import { MissionStatus } from "@skyops/shared";
+import { MissionStatus, MissionType } from "@skyops/shared";
 
 interface MissionFilters {
   status?: MissionStatus;
@@ -25,5 +25,44 @@ export function useMissions(filters: MissionFilters = {}) {
     queryKey: ["missions", filters],
     queryFn: () =>
       api.get<Paginated<Mission>>(`/missions?${params.toString()}`),
+  });
+}
+
+export function useCreateMission() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: {
+      name: string;
+      type: MissionType;
+      droneId: string;
+      pilotName: string;
+      siteLocation: string;
+      plannedStart: string;
+      plannedEnd: string;
+    }) => api.post<Mission>("/missions", body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["missions"] });
+      qc.invalidateQueries({ queryKey: ["fleet-health"] });
+    },
+  });
+}
+
+export function useMissionTransition() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      action,
+      body,
+    }: {
+      id: string;
+      action: "pre-flight" | "start" | "complete" | "abort";
+      body?: unknown;
+    }) => api.patch<Mission>(`/missions/${id}/${action}`, body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["missions"] });
+      qc.invalidateQueries({ queryKey: ["drones"] }); // drone status değişebilir
+      qc.invalidateQueries({ queryKey: ["fleet-health"] });
+    },
   });
 }
