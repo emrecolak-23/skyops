@@ -3,6 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { dataSourceOptions } from 'src/database/typeorm.config';
 import { AllConfigType } from 'src/config/config.type';
+import { join } from 'path';
+import { NodeEnv } from 'src/config/app.config';
 
 @Module({
   imports: [
@@ -11,8 +13,9 @@ import { AllConfigType } from 'src/config/config.type';
       useFactory: (config: ConfigService<AllConfigType>) => ({
         ...dataSourceOptions,
         url: config.getOrThrow('database.url', { infer: true }),
-        migrations: [],
-        migrationsRun: false,
+        migrations: [join(__dirname, 'migrations', '*.js')],
+        migrationsRun:
+          config.get('app.nodeEnv', { infer: true }) === NodeEnv.Production,
       }),
     }),
   ],

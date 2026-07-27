@@ -34,7 +34,6 @@ export default function DronesPage() {
         <Group justify="space-between" style={{ flexShrink: 0 }}>
           <Title order={2}>Drones</Title>
           <Group justify="space-between" style={{ flexShrink: 0 }}>
-            <Title order={2}>Drones</Title>
             <Button onClick={() => setCreateOpen(true)}>New Drone</Button>
           </Group>
         </Group>

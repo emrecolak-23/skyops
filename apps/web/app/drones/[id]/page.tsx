@@ -9,6 +9,7 @@ import { DroneActions } from "@/features/drones/components/DroneActions";
 import { DroneInfoCards } from "@/features/drones/components/DroneInfoCards";
 import { MissionHistory } from "@/features/missions/components/MissionHistory";
 import { StartMaintenanceModal } from "@/features/maintenance/components/StartMaintenanceModal";
+import { MaintenanceHistory } from "@/features/maintenance/components/MaintenanceHistory";
 
 export default function DroneDetailPage({
   params,
@@ -58,6 +59,7 @@ export default function DroneDetailPage({
         style={{ flex: 1, minHeight: 0 }}
       >
         <MissionHistory droneId={id} />
+        <MaintenanceHistory droneId={id} />
       </SimpleGrid>
 
       <StartMaintenanceModal
