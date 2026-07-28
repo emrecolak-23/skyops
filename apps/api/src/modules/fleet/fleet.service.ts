@@ -14,6 +14,7 @@ import {
 } from 'src/modules/drones/domain/maintenance/maintenance-policy';
 import {
   buildStatusBreakdown,
+  filterDueSoonDrones,
   filterOverdueDrones,
   totalFromBreakdown,
 } from './domain/fleet-health';
@@ -41,10 +42,17 @@ export class FleetService {
 
     const breakdown = buildStatusBreakdown(statusCounts);
     const overdue = filterOverdueDrones(nonRetired, this.policy, now);
+    const dueSoon = filterDueSoonDrones(nonRetired, this.policy, now);
 
     return {
       totalDrones: totalFromBreakdown(breakdown),
       statusBreakdown: breakdown,
+      dueSoonMaintenance: dueSoon.map((d) => ({
+        id: d.id,
+        serialNumber: d.serialNumber,
+        model: d.model,
+        nextMaintenanceDueDate: d.nextMaintenanceDueDate?.toISOString() ?? null,
+      })),
       overdueMaintenance: overdue.map((d) => ({
         id: d.id,
         serialNumber: d.serialNumber,

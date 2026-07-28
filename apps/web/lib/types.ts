@@ -18,6 +18,7 @@ export interface Drone {
   registeredAt: string;
   notes: string | null;
   maintenanceDue?: boolean;
+  maintenanceDueSoon?: boolean;
 }
 
 export interface Mission {
@@ -56,6 +57,12 @@ export interface FleetHealth {
   totalDrones: number;
   statusBreakdown: Record<DroneStatus, number>;
   overdueMaintenance: {
+    id: string;
+    serialNumber: string;
+    model: DroneModel;
+    nextMaintenanceDueDate: string | null;
+  }[];
+  dueSoonMaintenance: {
     id: string;
     serialNumber: string;
     model: DroneModel;

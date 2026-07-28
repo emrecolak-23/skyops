@@ -44,10 +44,14 @@ export class InMemoryMissionRepository implements IMissionRepository {
     droneId: string,
     plannedStart: Date,
     plannedEnd: Date,
+    _tx?: Tx,
+    excludeMissionId?: string,
   ): Promise<Mission[]> {
     const result = [...this.store.values()].filter(
       (m) =>
         m.droneId === droneId &&
+        m.id !== excludeMissionId &&
+        ACTIVE_STATUSES.includes(m.status) &&
         rangesOverlap(m.plannedStart, m.plannedEnd, plannedStart, plannedEnd),
     );
     return Promise.resolve(result);

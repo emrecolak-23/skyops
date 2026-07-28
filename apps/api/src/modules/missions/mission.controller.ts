@@ -16,6 +16,7 @@ import { MissionQueryDto } from './dto/mission-query.dto';
 import { MissionResponseDto } from './dto/mission-response.dto';
 import { MissionStateMachine } from './domain/mission-state-machine';
 import { Mission } from './entities/mission.entity';
+import { RescheduleMissionDto } from './dto';
 
 @Controller('missions')
 export class MissionsController {
@@ -86,6 +87,15 @@ export class MissionsController {
     @Body() dto: AbortMissionDto,
   ): Promise<MissionResponseDto> {
     const mission = await this.missionsService.abort(id, dto);
+    return this.toResponse(mission);
+  }
+
+  @Patch(':id/reschedule')
+  async reschedule(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: RescheduleMissionDto,
+  ): Promise<MissionResponseDto> {
+    const mission = await this.missionsService.reschedule(id, dto);
     return this.toResponse(mission);
   }
 

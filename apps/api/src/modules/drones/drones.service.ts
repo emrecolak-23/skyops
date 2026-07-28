@@ -1,12 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { CLOCK } from 'src/common/clock';
-import type { Clock } from 'src/common/clock';
-import { DRONE_REPOSITORY } from './repositories/drone.repository';
-import type { IDroneRepository } from './repositories/drone.repository';
-import { MAINTENANCE_POLICY } from './domain/maintenance/maintenance-policy';
-import type { MaintenancePolicy } from './domain/maintenance/maintenance-policy';
-import { ACTIVE_MISSION_CHECKER } from './ports';
-import type { ActiveMissionChecker } from './ports';
+import { CLOCK, type Clock } from 'src/common/clock';
+import {
+  DRONE_REPOSITORY,
+  type IDroneRepository,
+} from './repositories/drone.repository';
+import {
+  MAINTENANCE_POLICY,
+  type MaintenancePolicy,
+} from './domain/maintenance/maintenance-policy';
+import { ACTIVE_MISSION_CHECKER, type ActiveMissionChecker } from './ports';
 import { DroneStatus } from '@skyops/shared';
 import { Drone } from './entities/drone.entity';
 import { CreateDroneDto } from './dto/create-drone.dto';
@@ -19,6 +21,7 @@ import { PaginationQueryDto } from 'src/common/pagination/pagination-query.dto';
 import { PaginatedResult } from 'src/common/pagination/pagination';
 import { Tx } from 'src/common/persistence/tx';
 import { buildMaintenanceContext } from './domain/maintenance/maintenance-context';
+import { isMaintenanceDueSoon as checkMaintenanceDueSoon } from './domain/maintenance/maintenance-alert';
 
 @Injectable()
 export class DronesService {
@@ -128,6 +131,15 @@ export class DronesService {
   isMaintenanceDue(drone: Drone): boolean {
     const ctx = buildMaintenanceContext(drone, this.clock.now());
     return this.maintenancePolicy.evaluate(ctx).isDue;
+  }
+
+  isMaintenanceDueSoon(drone: Drone, withinDays = 7): boolean {
+    return checkMaintenanceDueSoon(
+      drone,
+      this.maintenancePolicy,
+      this.clock.now(),
+      withinDays,
+    );
   }
 
   async update(id: string, dto: { notes?: string | null }): Promise<Drone> {

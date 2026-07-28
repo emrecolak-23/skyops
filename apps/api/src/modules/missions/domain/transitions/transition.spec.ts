@@ -5,7 +5,10 @@ import { StartPreFlightTransition } from './start-preflight.transition';
 import { StartMissionTransition } from './start-mission.transition';
 import { CompleteMissionTransition } from './complete-mission.transition';
 import { AbortMissionTransition } from './abort-mission.transition';
-import { DroneNotAvailableError } from '../mission.errors';
+import {
+  DroneMaintenanceDueError,
+  DroneNotAvailableError,
+} from '../mission.errors';
 
 const now = new Date('2026-08-01T10:00:00.000Z');
 
@@ -29,7 +32,7 @@ describe('StartPreFlightTransition', () => {
     const mission = makeMission(MissionStatus.PLANNED);
     const drone = makeDrone(DroneStatus.AVAILABLE);
 
-    transition.apply({ mission, drone, now });
+    transition.apply({ mission, drone, now, maintenanceDue: false });
 
     expect(mission.status).toBe(MissionStatus.PRE_FLIGHT_CHECK);
   });
@@ -42,7 +45,7 @@ describe('StartMissionTransition', () => {
     const mission = makeMission(MissionStatus.PRE_FLIGHT_CHECK);
     const drone = makeDrone(DroneStatus.AVAILABLE);
 
-    transition.apply({ mission, drone, now });
+    transition.apply({ mission, drone, now, maintenanceDue: false });
 
     expect(mission.status).toBe(MissionStatus.IN_PROGRESS);
     expect(mission.actualStart).toEqual(now);
@@ -52,7 +55,7 @@ describe('StartMissionTransition', () => {
     const mission = makeMission(MissionStatus.PRE_FLIGHT_CHECK);
     const drone = makeDrone(DroneStatus.AVAILABLE);
 
-    transition.apply({ mission, drone, now });
+    transition.apply({ mission, drone, now, maintenanceDue: false });
 
     expect(drone.status).toBe(DroneStatus.IN_MISSION);
   });
@@ -61,9 +64,20 @@ describe('StartMissionTransition', () => {
     const mission = makeMission(MissionStatus.PRE_FLIGHT_CHECK);
     const drone = makeDrone(DroneStatus.MAINTENANCE);
 
-    expect(() => transition.apply({ mission, drone, now })).toThrow(
-      DroneNotAvailableError,
-    );
+    expect(() =>
+      transition.apply({ mission, drone, now, maintenanceDue: false }),
+    ).toThrow(DroneNotAvailableError);
+  });
+
+  it('rejects starting when the drone has maintenance due', () => {
+    const mission = makeMission(MissionStatus.PRE_FLIGHT_CHECK);
+    const drone = makeDrone(DroneStatus.AVAILABLE);
+
+    expect(() =>
+      transition.apply({ mission, drone, now, maintenanceDue: true }),
+    ).toThrow(DroneMaintenanceDueError);
+    expect(mission.status).toBe(MissionStatus.PRE_FLIGHT_CHECK);
+    expect(drone.status).toBe(DroneStatus.AVAILABLE);
   });
 });
 
@@ -74,7 +88,13 @@ describe('CompleteMissionTransition', () => {
     const mission = makeMission(MissionStatus.IN_PROGRESS);
     const drone = makeDrone(DroneStatus.IN_MISSION);
 
-    transition.apply({ mission, drone, now, flightHoursLogged: 2.5 });
+    transition.apply({
+      mission,
+      drone,
+      now,
+      maintenanceDue: false,
+      flightHoursLogged: 2.5,
+    });
 
     expect(mission.status).toBe(MissionStatus.COMPLETED);
     expect(mission.actualEnd).toEqual(now);
@@ -84,7 +104,13 @@ describe('CompleteMissionTransition', () => {
     const mission = makeMission(MissionStatus.IN_PROGRESS);
     const drone = makeDrone(DroneStatus.IN_MISSION);
 
-    transition.apply({ mission, drone, now, flightHoursLogged: 2.5 });
+    transition.apply({
+      mission,
+      drone,
+      now,
+      maintenanceDue: false,
+      flightHoursLogged: 2.5,
+    });
 
     expect(mission.flightHoursLogged).toBe(2.5);
   });
@@ -93,7 +119,14 @@ describe('CompleteMissionTransition', () => {
     const mission = makeMission(MissionStatus.IN_PROGRESS);
     const drone = makeDrone(DroneStatus.IN_MISSION, 100);
 
-    transition.apply({ mission, drone, now, flightHoursLogged: 2.5 });
+    transition.apply({
+      mission,
+      drone,
+      now,
+      maintenanceDue: false,
+      flightHoursLogged: 2.5,
+    });
+
     expect(drone.totalFlightHours).toBe(102.5);
   });
 
@@ -101,7 +134,13 @@ describe('CompleteMissionTransition', () => {
     const mission = makeMission(MissionStatus.IN_PROGRESS);
     const drone = makeDrone(DroneStatus.IN_MISSION);
 
-    transition.apply({ mission, drone, now, flightHoursLogged: 2.5 });
+    transition.apply({
+      mission,
+      drone,
+      now,
+      maintenanceDue: false,
+      flightHoursLogged: 2.5,
+    });
 
     expect(drone.status).toBe(DroneStatus.AVAILABLE);
   });
@@ -114,7 +153,13 @@ describe('AbortMissionTransition', () => {
     const mission = makeMission(MissionStatus.IN_PROGRESS);
     const drone = makeDrone(DroneStatus.IN_MISSION);
 
-    transition.apply({ mission, drone, now, abortReason: 'weather' });
+    transition.apply({
+      mission,
+      drone,
+      now,
+      maintenanceDue: false,
+      abortReason: 'weather',
+    });
 
     expect(mission.status).toBe(MissionStatus.ABORTED);
     expect(mission.actualEnd).toEqual(now);
@@ -125,7 +170,13 @@ describe('AbortMissionTransition', () => {
     const mission = makeMission(MissionStatus.IN_PROGRESS);
     const drone = makeDrone(DroneStatus.IN_MISSION);
 
-    transition.apply({ mission, drone, now, abortReason: 'weather' });
+    transition.apply({
+      mission,
+      drone,
+      now,
+      maintenanceDue: false,
+      abortReason: 'weather',
+    });
 
     expect(drone.status).toBe(DroneStatus.AVAILABLE);
   });
@@ -134,7 +185,13 @@ describe('AbortMissionTransition', () => {
     const mission = makeMission(MissionStatus.PLANNED);
     const drone = makeDrone(DroneStatus.AVAILABLE);
 
-    transition.apply({ mission, drone, now, abortReason: 'cancelled' });
+    transition.apply({
+      mission,
+      drone,
+      now,
+      maintenanceDue: false,
+      abortReason: 'cancelled',
+    });
 
     expect(drone.status).toBe(DroneStatus.AVAILABLE);
   });

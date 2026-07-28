@@ -1,8 +1,8 @@
 import { Table, Badge, Text, ScrollArea } from "@mantine/core";
-import Link from "next/link";
 import { STATUS_COLORS } from "../../missions/constants";
 import { MissionStatus } from "@skyops/shared";
 import { Mission } from "@/lib/types";
+import { useRouter } from "next/navigation";
 
 export function MissionTable({
   missions,
@@ -11,12 +11,13 @@ export function MissionTable({
   missions: Mission[];
   dateField: "plannedStart" | "actualEnd";
 }) {
+  const router = useRouter();
   if (missions.length === 0) {
     return <Text c="dimmed">No missions.</Text>;
   }
   return (
     <ScrollArea style={{ height: "100%", minHeight: 0 }}>
-      <Table stickyHeader>
+      <Table stickyHeader highlightOnHover>
         <Table.Thead>
           <Table.Tr>
             <Table.Th>Name</Table.Th>
@@ -26,10 +27,12 @@ export function MissionTable({
         </Table.Thead>
         <Table.Tbody>
           {missions.map((m) => (
-            <Table.Tr key={m.id}>
-              <Table.Td>
-                <Link href={`/missions/${m.id}`}>{m.name}</Link>
-              </Table.Td>
+            <Table.Tr
+              key={m.id}
+              style={{ cursor: "pointer" }}
+              onClick={() => router.push(`/missions/${m.id}`)}
+            >
+              <Table.Td>{m.name}</Table.Td>
               <Table.Td>
                 <Badge
                   color={STATUS_COLORS[m.status as MissionStatus]}

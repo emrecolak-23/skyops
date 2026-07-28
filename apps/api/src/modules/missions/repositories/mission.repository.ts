@@ -26,6 +26,7 @@ export interface IMissionRepository {
     plannedStart: Date,
     plannedEnd: Date,
     tx?: Tx,
+    excludeMissionId?: string,
   ): Promise<Mission[]>;
   countActiveByDroneId(droneId: string): Promise<number>;
   save(mission: Mission, tx?: Tx): Promise<Mission>;

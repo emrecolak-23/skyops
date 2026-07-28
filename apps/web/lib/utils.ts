@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
 import { Drone } from "@/lib/types";
 import { DroneStatus } from "@skyops/shared";
+import { DATETIME_INPUT_FORMAT } from "./constants";
 
 export function formatFlightHours(hours: number): string {
   const totalMinutes = Math.round(hours * 60);
@@ -59,4 +60,19 @@ export function defaultPlannedEnd() {
     .minute(0)
     .second(0)
     .format("YYYY-MM-DD HH:mm:ss");
+}
+
+export function toDateTimeInput(iso: string): string {
+  return dayjs(iso).format(DATETIME_INPUT_FORMAT);
+}
+export function shiftWindow(
+  start: string,
+  end: string,
+  amount: number,
+  unit: "day" | "week",
+): { start: string; end: string } {
+  return {
+    start: dayjs(start).add(amount, unit).format(DATETIME_INPUT_FORMAT),
+    end: dayjs(end).add(amount, unit).format(DATETIME_INPUT_FORMAT),
+  };
 }

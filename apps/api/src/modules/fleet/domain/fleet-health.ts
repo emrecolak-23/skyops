@@ -2,6 +2,7 @@ import { DroneStatus } from '@skyops/shared';
 import { MaintenancePolicy } from 'src/modules/drones/domain/maintenance/maintenance-policy';
 import { Drone } from 'src/modules/drones/entities/drone.entity';
 import { buildMaintenanceContext } from 'src/modules/drones/domain/maintenance/maintenance-context';
+import { isMaintenanceDueSoon } from 'src/modules/drones/domain/maintenance/maintenance-alert';
 
 export interface StatusCount {
   status: DroneStatus;
@@ -50,4 +51,13 @@ export function filterOverdueDrones(
     const ctx = buildMaintenanceContext(drone, now);
     return policy.evaluate(ctx).isDue;
   });
+}
+
+export function filterDueSoonDrones(
+  drones: Drone[],
+  policy: MaintenancePolicy,
+  now: Date,
+  withinDays = 7,
+): Drone[] {
+  return drones.filter((d) => isMaintenanceDueSoon(d, policy, now, withinDays));
 }

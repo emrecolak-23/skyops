@@ -29,7 +29,8 @@ export class TypeormMissionRepository implements IMissionRepository {
   findById(id: string, tx?: Tx): Promise<Mission | null> {
     return this.manager(tx)
       .createQueryBuilder('mission')
-      .innerJoinAndSelect('mission.drone', 'drone')
+      .innerJoin('mission.drone', 'drone')
+      .addSelect(['drone.id', 'drone.serialNumber'])
       .where('mission.id = :id', { id })
       .getOne();
   }
@@ -76,16 +77,22 @@ export class TypeormMissionRepository implements IMissionRepository {
     plannedStart: Date,
     plannedEnd: Date,
     tx?: Tx,
+    excludeMissionId?: string,
   ): Promise<Mission[]> {
-    return this.manager(tx)
+    const qb = this.manager(tx)
       .createQueryBuilder('mission')
       .where('mission.droneId = :droneId', { droneId })
       .andWhere('mission.status IN (:...activeStatuses)', {
         activeStatuses: ACTIVE_STATUSES,
       })
       .andWhere('mission.plannedStart < :plannedEnd', { plannedEnd })
-      .andWhere('mission.plannedEnd > :plannedStart', { plannedStart })
-      .getMany();
+      .andWhere('mission.plannedEnd > :plannedStart', { plannedStart });
+
+    if (excludeMissionId) {
+      qb.andWhere('mission.id != :excludeMissionId', { excludeMissionId });
+    }
+
+    return qb.getMany();
   }
 
   countActiveByDroneId(droneId: string): Promise<number> {

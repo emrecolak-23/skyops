@@ -107,4 +107,18 @@ describe('FleetService', () => {
 
     expect(health.missionsNext24Hours).toBe(1);
   });
+
+  it('lists drones with maintenance due soon', async () => {
+    const dueDate = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+    await addDrone({
+      serialNumber: 'SKY-0003-0003',
+      lastMaintenanceDate: new Date(now.getTime() - 87 * 24 * 60 * 60 * 1000),
+      nextMaintenanceDueDate: dueDate,
+      totalFlightHours: 15,
+      flightHoursAtLastMaintenance: 12,
+    });
+
+    const health = await service.getHealth();
+    expect(health.dueSoonMaintenance).toHaveLength(1);
+  });
 });

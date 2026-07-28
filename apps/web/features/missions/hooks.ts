@@ -69,7 +69,27 @@ export function useMissionTransition() {
     }) => api.patch<Mission>(`/missions/${id}/${action}`, body),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["missions"] });
-      qc.invalidateQueries({ queryKey: ["drones"] }); // drone status değişebilir
+      qc.invalidateQueries({ queryKey: ["drones"] });
+      qc.invalidateQueries({ queryKey: ["fleet-health"] });
+    },
+  });
+}
+
+export function useRescheduleMission() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      ...body
+    }: {
+      id: string;
+      plannedStart: string;
+      plannedEnd: string;
+      droneId?: string;
+    }) => api.patch<Mission>(`/missions/${id}/reschedule`, body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["missions"] });
+      qc.invalidateQueries({ queryKey: ["drones"] });
       qc.invalidateQueries({ queryKey: ["fleet-health"] });
     },
   });

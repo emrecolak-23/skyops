@@ -54,3 +54,15 @@ export const MISSION_TABLE_HEADERS = [
   { label: "Pilot", key: "pilotName" },
   { label: "Planned Start", key: "plannedStart" },
 ];
+
+export const RESCHEDULABLE_STATUSES: MissionStatus[] = [
+  MissionStatus.PLANNED,
+  MissionStatus.PRE_FLIGHT_CHECK,
+];
+
+export const SHIFTS: { label: string; amount: number; unit: "day" | "week" }[] =
+  [
+    { label: "+1 day", amount: 1, unit: "day" },
+    { label: "+3 days", amount: 3, unit: "day" },
+    { label: "+1 week", amount: 1, unit: "week" },
+  ];

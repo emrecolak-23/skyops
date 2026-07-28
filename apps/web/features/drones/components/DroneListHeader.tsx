@@ -21,6 +21,11 @@ export function DroneDetailHeader({ drone }: { drone: Drone }) {
           Maintenance Due
         </Badge>
       )}
+      {drone.maintenanceDueSoon && (
+        <Badge color="orange" variant="light">
+          Maintenance Due Soon
+        </Badge>
+      )}
     </Group>
   );
 }

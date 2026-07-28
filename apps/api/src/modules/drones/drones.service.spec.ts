@@ -186,4 +186,20 @@ describe('DronesService', () => {
       ).rejects.toThrow(DroneNotFoundError);
     });
   });
+
+  describe('isMaintenanceDueSoon', () => {
+    it('returns true when due date is within 7 days', async () => {
+      const MS_PER_DAY = 24 * 60 * 60 * 1000;
+      const drone = await service.create({
+        serialNumber: 'SKY-A1B2-C3D4',
+        model: DroneModel.PHANTOM_4,
+      });
+      drone.lastMaintenanceDate = new Date(now.getTime() - 87 * MS_PER_DAY);
+      drone.nextMaintenanceDueDate = new Date(now.getTime() + 3 * MS_PER_DAY);
+      await repository.save(drone);
+
+      expect(service.isMaintenanceDueSoon(drone)).toBe(true);
+      expect(service.isMaintenanceDue(drone)).toBe(false);
+    });
+  });
 });

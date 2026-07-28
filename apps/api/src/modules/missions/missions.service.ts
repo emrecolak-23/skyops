@@ -6,7 +6,7 @@ import type { TransactionRunner } from 'src/common/persistence/transaction-runne
 import { TRANSACTION_RUNNER } from 'src/common/persistence/transaction-runner';
 import { DronesService } from '../drones/drones.service';
 import { Mission } from './entities/mission.entity';
-import { CreateMissionDto, MissionQueryDto } from './dto';
+import { CreateMissionDto, MissionQueryDto, RescheduleMissionDto } from './dto';
 import { MISSION_REPOSITORY } from './repositories/mission.repository';
 import type { IMissionRepository } from './repositories/mission.repository';
 import { MissionStateMachine } from './domain/mission-state-machine';
@@ -17,9 +17,12 @@ import {
   InvalidMissionScheduleError,
   MissionInPastError,
   MissionNotFoundError,
+  MissionNotReschedulableError,
   MissionOverlapError,
 } from './domain/mission.errors';
 import { PaginatedResult } from 'src/common/pagination/pagination';
+import type { Drone } from '../drones/entities/drone.entity';
+import { isReschedulable } from './domain/mission-reschedule';
 
 @Injectable()
 export class MissionsService {
@@ -36,27 +39,12 @@ export class MissionsService {
     const plannedStart = new Date(dto.plannedStart);
     const plannedEnd = new Date(dto.plannedEnd);
 
-    if (plannedEnd.getTime() <= plannedStart.getTime()) {
-      throw new InvalidMissionScheduleError();
-    }
-
-    if (plannedStart.getTime() < this.clock.now().getTime()) {
-      throw new MissionInPastError();
-    }
+    this.assertWindow(plannedStart, plannedEnd);
 
     return this.tx.run(async (tx) => {
       const drone = await this.drones.findByIdForUpdate(dto.droneId, tx);
 
-      if (
-        drone.status === DroneStatus.RETIRED ||
-        drone.status === DroneStatus.MAINTENANCE
-      ) {
-        throw new DroneNotAvailableError(drone.id);
-      }
-
-      if (this.drones.isMaintenanceDue(drone)) {
-        throw new DroneMaintenanceDueError(drone.id);
-      }
+      this.assertDroneSchedulable(drone);
 
       const overlapping = await this.missions.findActiveOverlapping(
         dto.droneId,
@@ -117,6 +105,49 @@ export class MissionsService {
     return mission;
   }
 
+  async reschedule(id: string, dto: RescheduleMissionDto): Promise<Mission> {
+    const plannedStart = new Date(dto.plannedStart);
+    const plannedEnd = new Date(dto.plannedEnd);
+
+    this.assertWindow(plannedStart, plannedEnd);
+
+    return this.tx.run(async (tx) => {
+      const mission = await this.missions.findById(id, tx);
+
+      if (!mission) {
+        throw new MissionNotFoundError(id);
+      }
+
+      if (!isReschedulable(mission.status)) {
+        throw new MissionNotReschedulableError(id, mission.status);
+      }
+
+      const droneId = dto.droneId ?? mission.droneId;
+      const drone = await this.drones.findByIdForUpdate(droneId, tx);
+
+      this.assertDroneSchedulable(drone);
+
+      const overlapping = await this.missions.findActiveOverlapping(
+        droneId,
+        plannedStart,
+        plannedEnd,
+        tx,
+        mission.id,
+      );
+
+      if (overlapping.length > 0) {
+        throw new MissionOverlapError(droneId);
+      }
+
+      mission.droneId = droneId;
+      mission.drone = drone;
+      mission.plannedStart = plannedStart;
+      mission.plannedEnd = plannedEnd;
+
+      return this.missions.save(mission, tx);
+    });
+  }
+
   findPaginated(query: MissionQueryDto): Promise<PaginatedResult<Mission>> {
     return this.missions.findPaginated(
       {
@@ -160,6 +191,7 @@ export class MissionsService {
         mission,
         drone,
         now,
+        maintenanceDue: this.drones.isMaintenanceDue(drone),
         flightHoursLogged: extra.flightHoursLogged,
         abortReason: extra.abortReason,
       });
@@ -174,5 +206,27 @@ export class MissionsService {
 
       return { mission, maintenanceDue };
     });
+  }
+
+  private assertWindow(plannedStart: Date, plannedEnd: Date): void {
+    if (plannedEnd.getTime() <= plannedStart.getTime()) {
+      throw new InvalidMissionScheduleError();
+    }
+
+    if (plannedStart.getTime() < this.clock.now().getTime()) {
+      throw new MissionInPastError();
+    }
+  }
+
+  private assertDroneSchedulable(drone: Drone): void {
+    if (
+      drone.status === DroneStatus.RETIRED ||
+      drone.status === DroneStatus.MAINTENANCE
+    ) {
+      throw new DroneNotAvailableError(drone.id);
+    }
+    if (this.drones.isMaintenanceDue(drone)) {
+      throw new DroneMaintenanceDueError(drone.id);
+    }
   }
 }

@@ -23,6 +23,7 @@ import {
   DroneNotAvailableError,
   MissionNotFoundError,
   DroneMaintenanceDueError,
+  MissionNotReschedulableError,
 } from './domain/mission.errors';
 import { DroneNotFoundError } from 'src/modules/drones/domain/drone.errors';
 import { InvalidMissionTransitionError } from './domain/mission-state-machine.errors';
@@ -250,6 +251,40 @@ describe('MissionService', () => {
         service.startPreFlight('00000000-0000-0000-0000-000000000000'),
       ).rejects.toThrow(MissionNotFoundError);
     });
+
+    it('rejects starting a mission when maintenance came due after it was planned', async () => {
+      const drone = droneRepo.create({
+        serialNumber: 'SKY-P3F3-0011',
+        model: DroneModel.MATRICE_300,
+        status: DroneStatus.AVAILABLE,
+        totalFlightHours: 48,
+        flightHoursAtLastMaintenance: 0,
+        lastMaintenanceDate: null,
+        registeredAt: now,
+        nextMaintenanceDueDate: null,
+      });
+      await droneRepo.save(drone);
+
+      const first = await service.create(validMissionInput(drone.id));
+      const second = await service.create(
+        validMissionInput(drone.id, {
+          plannedStart: '2026-08-05T11:00:00.000Z',
+          plannedEnd: '2026-08-05T13:00:00.000Z',
+        }),
+      );
+
+      await service.startPreFlight(first.id);
+      await service.start(first.id);
+      await service.complete(first.id, { flightHoursLogged: 3 });
+
+      await service.startPreFlight(second.id);
+      await expect(service.start(second.id)).rejects.toThrow(
+        DroneMaintenanceDueError,
+      );
+
+      const freshDrone = await droneRepo.findById(drone.id);
+      expect(freshDrone?.status).toBe(DroneStatus.AVAILABLE);
+    });
   });
 
   describe('maintenance due on completion', () => {
@@ -288,6 +323,141 @@ describe('MissionService', () => {
       });
 
       expect(result.maintenanceDue).toBe(false);
+    });
+  });
+
+  describe('reschedule', () => {
+    const newWindow = {
+      plannedStart: '2026-08-06T09:00:00.000Z',
+      plannedEnd: '2026-08-06T11:00:00.000Z',
+    };
+
+    async function seedSecondDrone(totalFlightHours = 0): Promise<Drone> {
+      const drone = droneRepo.create({
+        serialNumber: 'SKY-RSC1-0002',
+        model: DroneModel.MATRICE_300,
+        status: DroneStatus.AVAILABLE,
+        totalFlightHours,
+        flightHoursAtLastMaintenance: 0,
+        lastMaintenanceDate: null,
+        registeredAt: now,
+        nextMaintenanceDueDate: null,
+      });
+      return droneRepo.save(drone);
+    }
+
+    it('moves the planned window of a PLANNED mission', async () => {
+      const drone = await seedDrone();
+      const mission = await service.create(validMissionInput(drone.id));
+
+      const updated = await service.reschedule(mission.id, newWindow);
+
+      expect(updated.plannedStart.toISOString()).toBe(newWindow.plannedStart);
+      expect(updated.plannedEnd.toISOString()).toBe(newWindow.plannedEnd);
+      expect(updated.status).toBe(MissionStatus.PLANNED);
+    });
+
+    it('allows rescheduling into its own current window', async () => {
+      const drone = await seedDrone();
+      const mission = await service.create(validMissionInput(drone.id));
+
+      const updated = await service.reschedule(mission.id, {
+        plannedStart: '2026-08-05T09:00:00.000Z',
+        plannedEnd: '2026-08-05T11:00:00.000Z',
+      });
+
+      expect(updated.id).toBe(mission.id);
+    });
+
+    it('rejects a window overlapping another active mission', async () => {
+      const drone = await seedDrone();
+      await service.create(validMissionInput(drone.id));
+      const second = await service.create(
+        validMissionInput(drone.id, newWindow),
+      );
+
+      await expect(
+        service.reschedule(second.id, {
+          plannedStart: '2026-08-05T10:00:00.000Z',
+          plannedEnd: '2026-08-05T12:00:00.000Z',
+        }),
+      ).rejects.toThrow(MissionOverlapError);
+    });
+
+    it('rejects a window in the past', async () => {
+      const drone = await seedDrone();
+      const mission = await service.create(validMissionInput(drone.id));
+
+      await expect(
+        service.reschedule(mission.id, {
+          plannedStart: '2026-07-01T09:00:00.000Z',
+          plannedEnd: '2026-07-01T11:00:00.000Z',
+        }),
+      ).rejects.toThrow(MissionInPastError);
+    });
+
+    it('rejects when planned end is not after planned start', async () => {
+      const drone = await seedDrone();
+      const mission = await service.create(validMissionInput(drone.id));
+
+      await expect(
+        service.reschedule(mission.id, {
+          plannedStart: '2026-08-06T11:00:00.000Z',
+          plannedEnd: '2026-08-06T09:00:00.000Z',
+        }),
+      ).rejects.toThrow(InvalidMissionScheduleError);
+    });
+
+    it('rejects rescheduling a mission that is already in progress', async () => {
+      const drone = await seedDrone();
+      const mission = await service.create(validMissionInput(drone.id));
+      await service.startPreFlight(mission.id);
+      await service.start(mission.id);
+
+      await expect(service.reschedule(mission.id, newWindow)).rejects.toThrow(
+        MissionNotReschedulableError,
+      );
+    });
+
+    it('reassigns the mission to another drone', async () => {
+      const droneA = await seedDrone();
+      const droneB = await seedSecondDrone();
+      const mission = await service.create(validMissionInput(droneA.id));
+
+      const updated = await service.reschedule(mission.id, {
+        ...newWindow,
+        droneId: droneB.id,
+      });
+
+      expect(updated.droneId).toBe(droneB.id);
+    });
+
+    it('rejects reassignment to a drone with maintenance due', async () => {
+      const droneA = await seedDrone();
+      const droneB = await seedSecondDrone(60); // over the 50h threshold
+      const mission = await service.create(validMissionInput(droneA.id));
+
+      await expect(
+        service.reschedule(mission.id, { ...newWindow, droneId: droneB.id }),
+      ).rejects.toThrow(DroneMaintenanceDueError);
+    });
+
+    it('rejects rescheduling while the assigned drone is in maintenance', async () => {
+      const drone = await seedDrone();
+      const mission = await service.create(validMissionInput(drone.id));
+
+      drone.status = DroneStatus.MAINTENANCE;
+      await droneRepo.save(drone);
+
+      await expect(service.reschedule(mission.id, newWindow)).rejects.toThrow(
+        DroneNotAvailableError,
+      );
+    });
+
+    it('throws MissionNotFoundError for an unknown mission', async () => {
+      await expect(
+        service.reschedule('00000000-0000-0000-0000-000000000000', newWindow),
+      ).rejects.toThrow(MissionNotFoundError);
     });
   });
 });

@@ -12,6 +12,7 @@ export class FleetHealthResponseDto {
   totalDrones!: number;
   statusBreakdown!: StatusBreakdown;
   overdueMaintenance!: OverdueDroneDto[];
+  dueSoonMaintenance!: OverdueDroneDto[];
   missionsNext24Hours!: number;
   averageFlightHours!: number;
 }

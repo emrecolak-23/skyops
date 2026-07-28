@@ -1,3 +1,4 @@
+import { MissionStatus } from '@skyops/shared';
 import { DomainError, DomainErrorKind } from 'src/common/errors/domain-error';
 
 export class MissionNotFoundError extends DomainError {
@@ -43,5 +44,12 @@ export class DroneMaintenanceDueError extends DomainError {
     super(
       `Drone ${droneId} has maintenance due and cannot be assigned to a mission`,
     );
+  }
+}
+
+export class MissionNotReschedulableError extends DomainError {
+  readonly kind = DomainErrorKind.Conflict;
+  constructor(id: string, status: MissionStatus) {
+    super(`Mission ${id} cannot be rescheduled while it is ${status}`);
   }
 }

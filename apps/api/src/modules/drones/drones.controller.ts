@@ -31,7 +31,10 @@ export class DronesController {
     const result = await this.dronesService.findPaginated(query);
     return {
       data: result.data.map((d) =>
-        DroneResponseDto.fromEntity(d, this.dronesService.isMaintenanceDue(d)),
+        DroneResponseDto.fromEntity(d, {
+          maintenanceDue: this.dronesService.isMaintenanceDue(d),
+          maintenanceDueSoon: this.dronesService.isMaintenanceDueSoon(d),
+        }),
       ),
       meta: {
         page: query.page,
@@ -47,10 +50,10 @@ export class DronesController {
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<DroneResponseDto> {
     const drone = await this.dronesService.findById(id);
-    return DroneResponseDto.fromEntity(
-      drone,
-      this.dronesService.isMaintenanceDue(drone),
-    );
+    return DroneResponseDto.fromEntity(drone, {
+      maintenanceDue: this.dronesService.isMaintenanceDue(drone),
+      maintenanceDueSoon: this.dronesService.isMaintenanceDueSoon(drone, 7),
+    });
   }
 
   @Delete(':id')
@@ -67,9 +70,9 @@ export class DronesController {
     @Body() dto: UpdateDroneDto,
   ): Promise<DroneResponseDto> {
     const drone = await this.dronesService.update(id, dto);
-    return DroneResponseDto.fromEntity(
-      drone,
-      this.dronesService.isMaintenanceDue(drone),
-    );
+    return DroneResponseDto.fromEntity(drone, {
+      maintenanceDue: this.dronesService.isMaintenanceDue(drone),
+      maintenanceDueSoon: this.dronesService.isMaintenanceDueSoon(drone, 7),
+    });
   }
 }

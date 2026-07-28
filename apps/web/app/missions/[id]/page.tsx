@@ -5,6 +5,7 @@ import { Box, Loader, Center, Alert } from "@mantine/core";
 import { useMission } from "@/features/missions/hooks";
 import { MissionDetailHeader } from "@/features/missions/components/MissionDetailHeader";
 import { MissionInfoCards } from "@/features/missions/components/MissionInfoCards";
+import { MissionDroneAlert } from "@/features/missions/components/MissionDroneAlert";
 
 export default function MissionDetailPage({
   params,
@@ -26,6 +27,7 @@ export default function MissionDetailPage({
   return (
     <Box style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       <MissionDetailHeader mission={mission} />
+      <MissionDroneAlert mission={mission} />
       <MissionInfoCards mission={mission} />
     </Box>
   );

@@ -1,6 +1,9 @@
 import { DroneStatus, MissionStatus } from '@skyops/shared';
 import { MissionTransition, TransitionContext } from './mission-transition';
-import { DroneNotAvailableError } from '../mission.errors';
+import {
+  DroneMaintenanceDueError,
+  DroneNotAvailableError,
+} from '../mission.errors';
 
 export class StartMissionTransition implements MissionTransition {
   readonly to = MissionStatus.IN_PROGRESS;
@@ -8,6 +11,10 @@ export class StartMissionTransition implements MissionTransition {
   apply(ctx: TransitionContext): void {
     if (ctx.drone.status !== DroneStatus.AVAILABLE) {
       throw new DroneNotAvailableError(ctx.drone.id);
+    }
+
+    if (ctx.maintenanceDue) {
+      throw new DroneMaintenanceDueError(ctx.drone.id);
     }
 
     ctx.mission.status = this.to;

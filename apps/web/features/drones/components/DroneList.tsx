@@ -43,6 +43,10 @@ export function DroneList({ drones }: { drones: Drone[] }) {
                   <Badge color="red" variant="light">
                     Due
                   </Badge>
+                ) : drone.maintenanceDueSoon ? (
+                  <Badge color="orange" variant="light">
+                    Due soon
+                  </Badge>
                 ) : (
                   <Text size="sm" c="dimmed">
                     OK

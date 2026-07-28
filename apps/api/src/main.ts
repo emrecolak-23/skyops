@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { AllConfigType } from './config/config.type';
 import { ConfigService } from '@nestjs/config';
@@ -21,10 +22,15 @@ async function bootstrap() {
     }),
   );
 
+  app.use(helmet());
   app.enableShutdownHooks();
 
-  app.enableCors({ origin: true });
+  const corsOrigin =
+    process.env.NODE_ENV === 'production'
+      ? (process.env.CORS_ORIGIN?.split(',') ?? false)
+      : ['http://localhost:3000'];
 
+  app.enableCors({ origin: corsOrigin });
   const port = config.getOrThrow('app.port', { infer: true });
   await app.listen(port);
 }

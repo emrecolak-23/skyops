@@ -6,6 +6,7 @@ export interface TransitionContext {
   mission: Mission;
   drone: Drone;
   now: Date;
+  maintenanceDue: boolean;
   flightHoursLogged?: number;
   abortReason?: string;
 }

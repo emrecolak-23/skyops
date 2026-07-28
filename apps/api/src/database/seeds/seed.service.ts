@@ -91,6 +91,13 @@ export class SeedService {
         flightHoursAtLastMaintenance = totalFlightHours - 60;
       } else if (i % 5 === 0) {
         lastMaintenanceDate = new Date(now.getTime() - 120 * DAY);
+      } else if (i === 1 || i === 2) {
+        const daysSinceMaintenance = i === 1 ? 85 : 87;
+        lastMaintenanceDate = new Date(
+          now.getTime() - daysSinceMaintenance * DAY,
+        );
+        totalFlightHours = 15;
+        flightHoursAtLastMaintenance = 12;
       } else if (i % 11 === 0) {
         status = DroneStatus.RETIRED;
       } else if (i === 3) {
