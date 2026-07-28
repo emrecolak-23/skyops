@@ -15,8 +15,7 @@ export class DroneResponseDto {
 
   static fromEntity(
     drone: Drone,
-    flags?:
-      { maintenanceDue?: boolean; maintenanceDueSoon?: boolean } | undefined,
+    flags?: { maintenanceDue?: boolean; maintenanceDueSoon?: boolean },
   ): DroneResponseDto {
     const dto = new DroneResponseDto();
     dto.id = drone.id;
