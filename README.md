@@ -137,6 +137,7 @@ pnpm --filter web test
 ```bash
 # with the apps running (locally or via Docker):
 pnpm --filter @skyops/e2e test
+```
 
 ## Architecture notes
 
@@ -180,4 +181,3 @@ The brief left some things open. Here's how I read them and why.
 - Add the mission status audit trail described above
 - Move maintenance configuration to a database with a per model policy and an admin UI
 - Run the E2E suite in CI against the Docker Compose environment
-```
